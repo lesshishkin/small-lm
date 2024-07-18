@@ -1,4 +1,11 @@
 import youtokentome as yttm
+from executors.trainer import Trainer
+from configs.experiment_config import experiment_cfg
+
+
+def train():
+    trainer = Trainer(experiment_cfg)
+    trainer.fit()
 
 
 def create_tokenizer():
@@ -6,6 +13,7 @@ def create_tokenizer():
     model_path = "data/tinystories/ru_tinystories_tokenizer.model"
 
     yttm.BPE.train(data=train_data_path, vocab_size=25000, model=model_path)
+
 
 def load_tokenizer(model_path):
     # Loading model

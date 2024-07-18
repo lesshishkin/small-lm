@@ -7,8 +7,9 @@ from utils.common_functions import write_file, read_file
 from utils.enums import SetType
 
 
-class TranslationDataset(Dataset):
-    """A class for Translation Dataset."""
+class RussianStoriesDataset(Dataset):
+    """A class for Russian Tiny Stories Dataset."""
+    # TODO: поменять токенизацию
 
     def __init__(self, config, set_type: SetType):
         self.config = config
