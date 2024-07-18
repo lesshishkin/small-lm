@@ -1,16 +1,12 @@
-# This is a sample Python script.
+import youtokentome as yttm
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+def create_tokenizer():
+    train_data_path = "train_data.txt"
+    model_path = "example.model"
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+    yttm.BPE.train(data=train_data_path, vocab_size=25000, model=model_path)
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    create_tokenizer()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
