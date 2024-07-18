@@ -57,5 +57,5 @@ experiment_cfg.inference.temperature_value = 1
 experiment_cfg.inference.eps = 1e-9
 experiment_cfg.inference.stop_predict = 30  # Maximum number of inference steps (i.e. generated sequence length)
 
-experiment_cfg.model = model_cfg.vit
+experiment_cfg.model = model_cfg
 experiment_cfg.data = data_cfg

@@ -16,3 +16,10 @@ data_cfg.translation_dataset.preprocessing.preprocessed_data_path_template = 'to
 data_cfg.translation_dataset.preprocessing.special_tokens = ["[PAD]", "[SOS]", "[EOS]", "[UNK]"]
 data_cfg.translation_dataset.preprocessing.end_of_word = '</w>'
 data_cfg.translation_dataset.preprocessing.min_frequency = 2
+
+# NEW
+data_cfg.name = 'RussianStoriesDataset'
+data_cfg.path_to_data = 'data/tinystories'
+data_cfg.vocabulary_size = 25_000
+data_cfg.special_tokens = ["[PAD]", "[SOS]", "[EOS]", "[UNK]"]
+data_cfg.start_of_word = '▁'

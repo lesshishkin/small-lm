@@ -103,3 +103,18 @@ class RussianStoriesDataset(Dataset):
             'target_lang_tokens': self.dataset[self.config.target_lang][idx]['tokens'],
         }
         return sample_data
+
+
+class RussianStoriesDataset(Dataset):
+    """A class for Russian Tiny Stories Dataset."""
+    # TODO: поменять токенизацию
+
+    def __init__(self, config, set_type: SetType):
+        self.config = config
+        self.set_type = set_type
+
+        if set_type.name == SetType.train:
+            self.data = read_file(config.tokenized_train_data_path)
+
+        if set_type.name == SetType.validation:
+            self.data = read_file(config.tokenized_valid_data_path)
