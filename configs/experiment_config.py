@@ -58,4 +58,4 @@ experiment_cfg.inference.eps = 1e-9
 experiment_cfg.inference.stop_predict = 30  # Maximum number of inference steps (i.e. generated sequence length)
 
 experiment_cfg.model = model_cfg.vit
-experiment_cfg.data = data_cfg.cub
+experiment_cfg.data = data_cfg

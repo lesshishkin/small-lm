@@ -3,8 +3,8 @@ from easydict import EasyDict
 data_cfg = EasyDict()
 
 data_cfg.translation_dataset = EasyDict()
-data_cfg.translation_dataset.name = 'TranslationDataset'
-data_cfg.translation_dataset.path_to_data = ''
+data_cfg.translation_dataset.name = 'RussianStoriesDataset'
+data_cfg.translation_dataset.path_to_data = 'data/tinystories'
 data_cfg.translation_dataset.lang = 'ru'
 data_cfg.translation_dataset.vocabulary_size = 25_000
 data_cfg.translation_dataset.sort = True
