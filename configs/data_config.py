@@ -1,4 +1,5 @@
 from easydict import EasyDict
+import os
 
 data_cfg = EasyDict()
 
@@ -20,6 +21,8 @@ data_cfg.translation_dataset.preprocessing.min_frequency = 2
 # NEW
 data_cfg.name = 'RussianStoriesDataset'
 data_cfg.path_to_data = 'data/tinystories'
+data_cfg.tokenized_train_data_path = os.path.join(data_cfg.path_to_data, 'train_v2_ru_tokenized.pickle')
+data_cfg.tokenized_valid_data_path = os.path.join(data_cfg.path_to_data, 'valid_v2_ru_tokenized.pickle')
 data_cfg.vocabulary_size = 25_000
-data_cfg.special_tokens = ["[PAD]", "[SOS]", "[EOS]", "[UNK]"]
+data_cfg.special_tokens = ["<PAD>", "<UNK>", "<ВOS>", "<EOS>"]
 data_cfg.start_of_word = '▁'
