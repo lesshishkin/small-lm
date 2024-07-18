@@ -29,24 +29,6 @@ def create_tokenized_dataset_file(input_path, output_path, tokenizer_model_path)
         pickle.dump(final_data, pickle_file)
 
 
-def load_tokenizer(model_path):
-    # Loading model
-    bpe = yttm.BPE(model=model_path)
-    #
-    # test_text = 'Пришла жаба в гости к хрбше, а Том сидел в углу и думал'
-    # # Two types of tokenization
-    # print(bpe.encode([test_text], output_type=yttm.OutputType.ID))
-    # print(bpe.encode([test_text], output_type=yttm.OutputType.SUBWORD))
-
-    # Получение словаря
-    vocab = bpe.vocab()
-
-    # Сохранение словаря в файл
-    with open('vocab.txt', 'w') as f:
-        for token in vocab:
-            f.write(f"{token}\n")
-
-
 if __name__ == '__main__':
     create_tokenized_dataset_file(input_path="data/tinystories/train_v2_ru.txt",
                                   output_path="data/tinystories/train_v2_ru_tokenized.pickle",
