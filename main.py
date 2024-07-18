@@ -21,12 +21,8 @@ def create_tokenized_dataset_file(input_path, output_path, tokenizer_model_path)
     with open(input_path, 'r', encoding='utf-8') as file:
         data = file.read()
 
-    data = data.replace('\n', '')
     data = data.split('<|endoftext|>')
-
-    model_path = tokenizer_model_path
-    bpe = yttm.BPE(model=model_path)
-
+    bpe = yttm.BPE(model=tokenizer_model_path)
     final_data = bpe.encode(data, bos=True, eos=True)
 
     with open(output_path, 'wb') as pickle_file:
@@ -52,8 +48,6 @@ def load_tokenizer(model_path):
 
 
 if __name__ == '__main__':
-    # import pickle
-    #
-    # data = pickle.load('data/tinystories/train_v2_ru_tokenized.pickle')
-    # print()
-    pass
+    create_tokenized_dataset_file(input_path="data/tinystories/train_v2_ru.txt",
+                                  output_path="data/tinystories/train_v2_ru_tokenized.pickle",
+                                  tokenizer_model_path="data/tinystories/ru_tinystories_tokenizer.model")
