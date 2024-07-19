@@ -21,6 +21,8 @@ from transformers import get_cosine_schedule_with_warmup
 # from utils.training_utils import custom_lr_schedule
 from torch.nn.functional import softmax
 
+import youtokentome as yttm
+
 
 class Trainer:
     """A class for model training."""
@@ -30,6 +32,7 @@ class Trainer:
         set_seed(self.config.seed)
 
         self._prepare_data()
+        self.tokenizer = yttm.BPE(model=self.config.data.tokenizer_path, n_threads=-1)
         print('Data ready')
         self._prepare_model()
         print('Model ready')
@@ -61,7 +64,7 @@ class Trainer:
 
         model_class = getattr(sys.modules[__name__], self.config.model.name)
         model_kwargs = {
-            'vocabulary_size': self.config.data.vocabulary_size,
+            'vocabulary_size': self.tokenizer.vocab_size(),
         }
 
         self.model = model_class(self.config, **model_kwargs).to(self.device)
@@ -79,8 +82,8 @@ class Trainer:
         self.scheduler = get_cosine_schedule_with_warmup(self.optimizer,
                                                          num_warmup_steps=self.config.train.warmup_steps,
                                                          num_cycles=len(self.train_dataloader)*self.config.num_epochs)
-        # TODO: метрика?
-        # self.metric = evaluate.load("bleu")
+
+        self.metric = evaluate.load("bleu")
 
     def save(self, filepath: str):
         """Saves trained model."""
@@ -158,11 +161,10 @@ class Trainer:
         losses = losses[-self.config.train.log_window:]
         predictions = predictions[-self.config.train.log_window:]
         decoder_outputs = decoder_outputs[-self.config.train.log_window:]
-        encoder_inputs = encoder_inputs[-self.config.train.log_window:]
 
-        train_predictions_decoded = target_lang_preprocessor.decode(predictions, batch=True)
-        train_targets_decoded = target_lang_preprocessor.decode(decoder_outputs, batch=True)
-        train_encoder_inputs_decoded = source_lang_processor.decode(encoder_inputs, batch=True)
+        # todo разобраться какие индексы игнорировать
+        train_targets_decoded = self.tokenizer.decode(decoder_outputs)
+        train_predictions_decoded = self.tokenizer.decode(predictions)
 
         references = list(map(lambda x: [x], train_targets_decoded))
         try:
@@ -171,9 +173,9 @@ class Trainer:
             train_results = {'bleu': 0.}
 
         random_sample_num = random.randint(0, len(predictions) - 1)
-        output_to_show = f'Source:     {train_encoder_inputs_decoded[random_sample_num]}\n' \
-                         f'Target:     {train_targets_decoded[random_sample_num]}\n' \
-                         f'Prediction: {train_predictions_decoded[random_sample_num]}\n'
+        output_to_show = f"Target:     {train_targets_decoded[random_sample_num]}\n" \
+                         f"Prediction: {train_predictions_decoded[random_sample_num]}\n" \
+                         f"BLEU:       {train_results['bleu']}\n"
 
         return np.mean(losses), train_results['bleu'], output_to_show
 
