@@ -58,6 +58,8 @@ class Trainer:
             collate_fn=collate_function
         )
 
+        # todo добавить валидационный датасет
+
     def _prepare_model(self):
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -83,7 +85,7 @@ class Trainer:
                                                          num_warmup_steps=self.config.train.warmup_steps,
                                                          num_cycles=len(self.train_dataloader)*self.config.num_epochs)
 
-        self.metric = evaluate.load("bleu")
+        # self.metric = evaluate.load("bleu")
 
     def save(self, filepath: str):
         """Saves trained model."""
@@ -111,7 +113,7 @@ class Trainer:
             best_metric = valid_metric
         return best_metric
 
-    def make_step(self, batch: dict, update_model=False):
+    def make_step(self, batch, update_model=False):
         """This method performs one step, including forward pass, calculation of the target function, backward
         pass and updating the model weights (if update_model is True).
 
@@ -121,7 +123,8 @@ class Trainer:
 
         Returns:
             loss: loss function value
-            output: model output (batch_size x num_classes)
+            output: model output (batch_size x num_classes) todo ????
+            decoder_outputs: targets
         """
         _, decoder_inputs, decoder_outputs, decoder_mask = batch
         decoder_inputs = decoder_inputs.to(self.device)
@@ -143,20 +146,16 @@ class Trainer:
 
         return loss.item(), outputs.detach().cpu().numpy(), decoder_outputs.detach().cpu().numpy()
 
-    def evaluate_train(self, losses: list[float], predictions: list[list[int]], decoder_outputs: list[list[int]],
-                       encoder_inputs: list[list[int]], target_lang_preprocessor, source_lang_processor):
+    def evaluate_train(self, losses: list[float], predictions: list[list[int]], decoder_outputs: list[list[int]]):
         """Evaluates model performance on a part of training data (taken by sliding window).
 
         Args:
             losses: list of batch losses
             predictions: list of predictions (each predicted sequence is a list of token ids)
             decoder_outputs: list of targets (each target is a list of token ids)
-            encoder_inputs: list of source sentences (each source sentence is a list of token ids)
-            target_lang_preprocessor: preprocessor to decode target
-            source_lang_processor: preprocessor to decode source
 
         Returns:
-            Mean loss, BLEU score and text with translations to log
+            Mean loss, mean Perplexity and text with translations to log
         """
         losses = losses[-self.config.train.log_window:]
         predictions = predictions[-self.config.train.log_window:]
@@ -165,19 +164,14 @@ class Trainer:
         # todo разобраться какие индексы игнорировать
         train_targets_decoded = self.tokenizer.decode(decoder_outputs)
         train_predictions_decoded = self.tokenizer.decode(predictions)
-
-        references = list(map(lambda x: [x], train_targets_decoded))
-        try:
-            train_results = self.metric.compute(predictions=train_predictions_decoded, references=references)
-        except ZeroDivisionError:
-            train_results = {'bleu': 0.}
+        perplexity = np.exp(np.mean(losses))
 
         random_sample_num = random.randint(0, len(predictions) - 1)
         output_to_show = f"Target:     {train_targets_decoded[random_sample_num]}\n" \
                          f"Prediction: {train_predictions_decoded[random_sample_num]}\n" \
-                         f"BLEU:       {train_results['bleu']}\n"
+                         f"Perplexity: {perplexity}\n"
 
-        return np.mean(losses), train_results['bleu'], output_to_show
+        return np.mean(losses), perplexity, output_to_show
 
     def train_epoch(self, epoch: int, best_metric: float):
         """Train the model on training data for one epoch.
@@ -187,39 +181,37 @@ class Trainer:
         """
         self.model.train()
         steps_done = epoch * len(self.train_dataloader)
-        train_losses, train_predictions, train_encoder_inputs, train_decoder_outputs = [], [], [], []
+        train_losses, train_predictions, train_decoder_outputs = [], [], []
 
-        source_lang_processor = self.train_dataset.preprocessors[self.config.data.source_lang]
-        target_lang_preprocessor = self.train_dataset.preprocessors[self.config.data.target_lang]
-        pad_idx = self.config.data.preprocessing.special_tokens.index("[PAD]")
+        pad_idx = self.config.data.special_tokens.index("<PAD>")
 
         for step, batch in enumerate(self.train_dataloader):
-            loss, output, decoder_outputs, encoder_inputs = self.make_step(batch, update_model=True)
+            loss, output, decoder_outputs = self.make_step(batch, update_model=True)
             train_losses.append(loss)
+            # todo эта единица
             prediction_with_pad = output.argmax(axis=-1) + 1
             train_predictions.extend(
                 [prediction_with_pad[i][decoder_outputs[i] != pad_idx].tolist() for i in range(len(decoder_outputs))]
             )
-            train_encoder_inputs.extend(encoder_inputs.detach().cpu().tolist())
             train_decoder_outputs.extend(decoder_outputs.tolist())
 
-            # Evaluate performance on the validation data
-            if step % self.config.train.validation_frequency == 0:
-                valid_loss, valid_metric = self.evaluate(self.validation_dataloader)
-
-                self.logger.save_metrics(SetType.validation.name, 'loss', valid_loss, step=steps_done + step)
-                self.logger.save_metrics(SetType.validation.name, 'bleu', valid_metric, step=steps_done + step)
+            # todo добавить валидацию по api на валидационной выборке
+            # # Evaluate performance on the validation data
+            # if step % self.config.train.validation_frequency == 0:
+            #     valid_loss, valid_metric = self.evaluate(self.validation_dataloader)
+            #
+            #     self.logger.save_metrics(SetType.validation.name, 'loss', valid_loss, step=steps_done + step)
+            #     self.logger.save_metrics(SetType.validation.name, 'bleu', valid_metric, step=steps_done + step)
 
             # Evaluate performance on the part of training data
             if step % self.config.train.log_frequency == 0 and step != 0:
                 train_loss, train_metric, output_to_show = self.evaluate_train(
-                    train_losses, train_predictions, train_decoder_outputs, train_encoder_inputs,
-                    target_lang_preprocessor, source_lang_processor
+                    train_losses, train_predictions, train_decoder_outputs,
                 )
 
                 self.logger.save_metrics(SetType.train.name, 'loss', train_loss, step=steps_done + step)
-                self.logger.save_metrics(SetType.train.name, 'bleu', train_metric, step=steps_done + step)
-                self.logger.save_metrics(SetType.train.name, 'translation', output_to_show, step=steps_done + step)
+                self.logger.save_metrics(SetType.train.name, 'perplexity', train_metric, step=steps_done + step)
+                self.logger.save_metrics(SetType.train.name, 'generated_text', output_to_show, step=steps_done + step)
                 train_losses, train_predictions, train_decoder_outputs = [], [], []
 
             if step % self.config.checkpoint_save_frequency == 0:
@@ -266,6 +258,7 @@ class Trainer:
             dataloader: dataloader to make evaluation on
             inference: a boolean indicating whether to get predictions through inference
         """
+        # todo переделать под проверку при помощи llm
         self.model.eval()
         target_lang_preprocessor = self.train_dataset.preprocessors[self.config.data.target_lang]
         pad_idx = self.config.data.preprocessing.special_tokens.index("[PAD]")
