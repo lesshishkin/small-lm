@@ -2,11 +2,7 @@ import random
 from typing import Union
 
 import torch
-from PIL import ImageFilter, ImageOps, Image
 from torch.nn.utils.rnn import pad_sequence
-from torchvision import transforms
-
-from utils.enums import ImageAugmentationType
 
 
 def get_sequence_mask(sequence: torch.Tensor, pad_idx: int = 0, mask_future_positions: bool = False,
