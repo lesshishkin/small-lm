@@ -17,7 +17,8 @@ from utils.common_functions import set_seed
 from utils.data_utils import get_sequence_mask, collate_function
 from utils.enums import SetType, InferenceType
 from utils.logger import NeptuneLogger
-from utils.training_utils import custom_lr_schedule
+from transformers import get_cosine_schedule_with_warmup
+# from utils.training_utils import custom_lr_schedule
 from torch.nn.functional import softmax
 
 
@@ -69,16 +70,15 @@ class Trainer:
             self.model.parameters(), lr=self.config.train.learning_rate,
             **self.config.train.optimizer_params[self.config.train.optimizer]
         )
+        # todo разобраться с этим вычитанием, нужно ли нам это
         self.criterion = nn.CrossEntropyLoss(
-            ignore_index=self.config.data.preprocessing.special_tokens.index('[PAD]') - 1,
+            ignore_index=self.config.data.special_tokens.index('<PAD>') - 1,
             label_smoothing=self.config.train.label_smoothing
         )
 
-        lr_lambda = lambda step: custom_lr_schedule(
-            cur_step=step, emb_size=self.config.model.d_model, warmup_steps=self.config.train.warmup_steps
-        )
-
-        self.scheduler = LambdaLR(self.optimizer, lr_lambda=lr_lambda)
+        self.scheduler = get_cosine_schedule_with_warmup(self.optimizer,
+                                                         num_warmup_steps=self.config.train.warmup_steps,
+                                                         num_cycles=len(self.train_dataloader)*self.config.num_epochs)
         # TODO: метрика?
         # self.metric = evaluate.load("bleu")
 
