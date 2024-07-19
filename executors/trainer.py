@@ -120,14 +120,14 @@ class Trainer:
             loss: loss function value
             output: model output (batch_size x num_classes)
         """
-        _, encoder_inputs, decoder_inputs, decoder_outputs, encoder_mask, decoder_mask = batch
-        encoder_inputs = encoder_inputs.to(self.device)
+        _, decoder_inputs, decoder_outputs, decoder_mask = batch
         decoder_inputs = decoder_inputs.to(self.device)
         decoder_outputs = decoder_outputs.to(self.device)
-        encoder_mask = encoder_mask.to(self.device)
         decoder_mask = decoder_mask.to(self.device)
 
-        outputs, _, _, _ = self.model(encoder_inputs, decoder_inputs, encoder_mask, decoder_mask)
+        # todo разобраться с тем, что модель будет выдавать
+        outputs, _, _, _ = self.model(decoder_inputs, decoder_mask)
+        # todo разобраться с этим вычитанием единицы
         loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), decoder_outputs.reshape(-1) - 1)
 
         if update_model:
@@ -138,7 +138,7 @@ class Trainer:
 
             self.logger.save_metrics(SetType.train.name, 'learning_rate', self.optimizer.param_groups[0]['lr'])
 
-        return loss.item(), outputs.detach().cpu().numpy(), decoder_outputs.detach().cpu().numpy(), encoder_inputs
+        return loss.item(), outputs.detach().cpu().numpy(), decoder_outputs.detach().cpu().numpy()
 
     def evaluate_train(self, losses: list[float], predictions: list[list[int]], decoder_outputs: list[list[int]],
                        encoder_inputs: list[list[int]], target_lang_preprocessor, source_lang_processor):
