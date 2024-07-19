@@ -403,6 +403,6 @@ class Trainer:
                 print(f'Step: {step}')
                 decoded_prediction = self.tokenizer.decode(predictions[random_sample_num])
                 decoded_target = self.tokenizer.decode(decoder_outputs[random_sample_num])
-                output_to_show = f'Prediction:     {decoded_prediction}\n' \
+                output_to_show = f'Prediction: {decoded_prediction}\n' \
                                  f'Target:     {decoded_target}\n'
                 print(output_to_show)
