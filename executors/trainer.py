@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 
 from dataset.russian_stories_dataset import RussianStoriesDataset
 from executors.sampler import RandomSortingSampler
-from models.transformer import Transformer
+from models.transformer import TinyLLM
 from utils.common_functions import set_seed
 from utils.data_utils import get_sequence_mask, collate_function
 from utils.enums import SetType, InferenceType
@@ -59,11 +59,10 @@ class Trainer:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         model_class = getattr(sys.modules[__name__], self.config.model.name)
-        vocabulary_size = self.train_dataset.get_vocabulary_size()
         model_kwargs = {
-            'encoder_vocabulary_size': vocabulary_size[self.config.data.source_lang],
-            'decoder_vocabulary_size': vocabulary_size[self.config.data.target_lang],
+            'vocabulary_size': self.config.data.vocabulary_size,
         }
+
         self.model = model_class(self.config, **model_kwargs).to(self.device)
 
         self.optimizer = getattr(optim, self.config.train.optimizer)(
@@ -74,11 +73,14 @@ class Trainer:
             ignore_index=self.config.data.preprocessing.special_tokens.index('[PAD]') - 1,
             label_smoothing=self.config.train.label_smoothing
         )
+
         lr_lambda = lambda step: custom_lr_schedule(
             cur_step=step, emb_size=self.config.model.d_model, warmup_steps=self.config.train.warmup_steps
         )
+
         self.scheduler = LambdaLR(self.optimizer, lr_lambda=lr_lambda)
-        self.metric = evaluate.load("bleu")
+        # TODO: метрика?
+        # self.metric = evaluate.load("bleu")
 
     def save(self, filepath: str):
         """Saves trained model."""
