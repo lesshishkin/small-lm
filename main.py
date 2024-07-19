@@ -8,6 +8,24 @@ import youtokentome as yttm
 #     trainer.fit()
 
 
+def count_tokens_in_tokenized_dataset(dataset_path):
+    import pickle
+    with open(dataset_path, 'rb') as f:
+        data = pickle.load(f)
+
+    print(type(data))
+
+    num_tokens = 0
+    num_texts = 0
+    for line in data:
+        num_tokens += len(line)
+        num_texts += 1
+
+    print('Num tokens:', num_tokens)
+    print('Num texts: ', num_texts)
+    # Num tokens: 382_625_157
+    # Num texts:  2_717_495
+
 def create_tokenizer():
     train_data_path = "data/tinystories/train_v2_ru_prepared.txt"
     model_path = "data/tinystories/ru_tinystories_tokenizer.model"
@@ -30,10 +48,5 @@ def create_tokenized_dataset_file(input_path, output_path, tokenizer_model_path)
 
 
 if __name__ == '__main__':
-    # create_tokenized_dataset_file(input_path="data/tinystories/train_v2_ru.txt",
-    #                               output_path="data/tinystories/train_v2_ru_tokenized.pickle",
-    #                               tokenizer_model_path="data/tinystories/ru_tinystories_tokenizer.model")
-
-    create_tokenized_dataset_file(input_path="data/tinystories/valid_v2_ru.txt",
-                                  output_path="data/tinystories/valid_v2_ru_tokenized.pickle",
-                                  tokenizer_model_path="data/tinystories/ru_tinystories_tokenizer.model")
+    count_tokens_in_tokenized_dataset("data/tinystories/train_v2_ru_tokenized.pickle")
+    # pass
