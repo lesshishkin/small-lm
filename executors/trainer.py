@@ -63,7 +63,6 @@ class Trainer:
             self.validation_dataset, batch_size=self.config.train.validation_batch_size, collate_fn=collate_function
         )
 
-
     def _prepare_model(self):
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -310,6 +309,7 @@ class Trainer:
         Returns:
             Model output generated wrt the already generated sequence (decoded_sequence)
         """
+        # TODO переделать это тоже
         target_mask = get_sequence_mask(decoded_sequence, mask_future_positions=True, device=self.device)
 
         with torch.no_grad():
@@ -323,6 +323,7 @@ class Trainer:
     @torch.no_grad()
     def inference(self, sequence: torch.Tensor, inference_config, return_attention=False):
         """Makes inference with auto-regressive decoding for the given sequence."""
+        # TODO переделать инференс
         self.model.eval()
         batch_size = sequence.size(0)
         sos_token_id = self.config.data.preprocessing.special_tokens.index("[SOS]")
@@ -361,6 +362,7 @@ class Trainer:
     @torch.no_grad()
     def predict(self, model_path: str, dataloader: DataLoader, inference_config):
         """Gets model predictions for a given dataloader."""
+        # TODO переделать предикт
         self.load(model_path)
         self.model.eval()
 
@@ -383,13 +385,13 @@ class Trainer:
         This feature can be useful for debugging and evaluating your model's ability to learn and update its weights.
         """
         self.model.train()
-        source_lang_processor = self.train_dataset.preprocessors[self.config.data.source_lang]
-        target_lang_preprocessor = self.train_dataset.preprocessors[self.config.data.target_lang]
-        pad_idx = self.config.data.preprocessing.special_tokens.index("[PAD]")
+
+        pad_idx = self.config.data.preprocessing.special_tokens.index("<PAD>")
         batch = next(iter(self.train_dataloader))
 
         for step in range(self.config.overfit.num_iterations):
-            loss, output, decoder_outputs, encoder_inputs = self.make_step(batch, update_model=True)
+            loss, output, decoder_outputs = self.make_step(batch, update_model=True)
+            self.logger.save_metrics(SetType.train.name, 'loss', loss, step=step)
 
             if step % 10 == 0:
                 prediction_with_pad = output.argmax(axis=-1)
@@ -399,10 +401,8 @@ class Trainer:
 
                 random_sample_num = random.randint(0, len(batch) - 1)
                 print(f'Step: {step}')
-                targets_decoded = target_lang_preprocessor.tokenizer.decode(decoder_outputs[random_sample_num])
-                predictions_decoded = target_lang_preprocessor.tokenizer.decode(predictions[random_sample_num])
-                source_decoded = source_lang_processor.tokenizer.decode(encoder_inputs[random_sample_num])
-                output_to_show = f'Source:     {source_decoded}\n' \
-                                 f'Target:     {targets_decoded}\n' \
-                                 f'Prediction: {predictions_decoded}\n'
+                decoded_prediction = self.tokenizer.decode(predictions[random_sample_num])
+                decoded_target = self.tokenizer.decode(decoder_outputs[random_sample_num])
+                output_to_show = f'Prediction:     {decoded_prediction}\n' \
+                                 f'Target:     {decoded_target}\n'
                 print(output_to_show)
