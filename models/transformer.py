@@ -128,3 +128,11 @@ class Transformer(nn.Module):
 
         output = self.output(decoder_output)
         return output, encoder_attention_weights, decoder_self_attention_weights, decoder_encoder_attention_weights
+
+
+class TinyLLM(nn.Module):
+    """TinyLLM -- tiny but large"""
+
+    def __init__(self):
+        super(TinyLLM, self).__init__()
+        # TODO
