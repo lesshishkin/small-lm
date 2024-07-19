@@ -58,7 +58,11 @@ class Trainer:
             collate_fn=collate_function
         )
 
-        # todo добавить валидационный датасет
+        self.validation_dataset = dataset(data_cfg, SetType.validation)
+        self.validation_dataloader = DataLoader(
+            self.validation_dataset, batch_size=self.config.train.validation_batch_size, collate_fn=collate_function
+        )
+
 
     def _prepare_model(self):
         """Preparing model, optimizer and loss function."""
@@ -228,24 +232,26 @@ class Trainer:
             self.load(self.config.checkpoint_name % step)
             start_epoch = step // len(self.train_dataloader) + 1
 
+        # todo пока не реализовали валидацию просто смотрим лосс и сохраняем по расписанию
         for epoch in range(start_epoch, self.config.num_epochs):
             best_metric = self.train_epoch(epoch, best_metric)
-            if epoch % self.config.train.inference_frequency == 0:
-                _, valid_metric = self.evaluate(self.validation_dataloader, inference=True)
-                _, train_eval_metric = self.evaluate(self.train_eval_dataloader, inference=True)
-                best_metric = self.update_best_params(valid_metric, best_metric)
 
-                step = max(0, epoch * len(self.train_dataloader) - 1)
-                self.logger.save_metrics(SetType.validation.name + '_eval', 'bleu_inference', valid_metric, step=step)
-                self.logger.save_metrics(SetType.train.name + '_eval', 'bleu_inference', train_eval_metric, step=step)
+            # if epoch % self.config.train.inference_frequency == 0:
+            #     # _, valid_metric = self.evaluate(self.validation_dataloader, inference=True)
+            #     # _, train_eval_metric = self.evaluate(self.train_eval_dataloader, inference=True)
+            #     # best_metric = self.update_best_params(valid_metric, best_metric)
+            #
+            #     step = max(0, epoch * len(self.train_dataloader) - 1)
+            #     self.logger.save_metrics(SetType.validation.name + '_eval', 'bleu_inference', valid_metric, step=step)
+            #     self.logger.save_metrics(SetType.train.name + '_eval', 'bleu_inference', train_eval_metric, step=step)
 
-        _, valid_metric = self.evaluate(self.validation_dataloader, inference=True)
-        _, train_eval_metric = self.evaluate(self.train_eval_dataloader, inference=True)
-        self.update_best_params(valid_metric, best_metric)
+        # _, valid_metric = self.evaluate(self.validation_dataloader, inference=True)
+        # _, train_eval_metric = self.evaluate(self.train_eval_dataloader, inference=True)
+        # self.update_best_params(valid_metric, best_metric)
 
         last_step = self.config.num_epochs * len(self.train_dataloader) - 1
-        self.logger.save_metrics(SetType.validation.name + '_eval', 'bleu_inference', valid_metric, step=last_step)
-        self.logger.save_metrics(SetType.train.name + '_eval', 'bleu_inference', train_eval_metric, step=last_step)
+        # self.logger.save_metrics(SetType.validation.name + '_eval', 'bleu_inference', valid_metric, step=last_step)
+        # self.logger.save_metrics(SetType.train.name + '_eval', 'bleu_inference', train_eval_metric, step=last_step)
         self.save(self.config.checkpoint_name % last_step)
 
     @torch.no_grad()

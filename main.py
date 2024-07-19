@@ -30,6 +30,10 @@ def create_tokenized_dataset_file(input_path, output_path, tokenizer_model_path)
 
 
 if __name__ == '__main__':
-    create_tokenized_dataset_file(input_path="data/tinystories/train_v2_ru.txt",
-                                  output_path="data/tinystories/train_v2_ru_tokenized.pickle",
+    # create_tokenized_dataset_file(input_path="data/tinystories/train_v2_ru.txt",
+    #                               output_path="data/tinystories/train_v2_ru_tokenized.pickle",
+    #                               tokenizer_model_path="data/tinystories/ru_tinystories_tokenizer.model")
+
+    create_tokenized_dataset_file(input_path="data/tinystories/valid_v2_ru.txt",
+                                  output_path="data/tinystories/valid_v2_ru_tokenized.pickle",
                                   tokenizer_model_path="data/tinystories/ru_tinystories_tokenizer.model")
