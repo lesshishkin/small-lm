@@ -29,7 +29,9 @@ class Trainer:
         set_seed(self.config.seed)
 
         self._prepare_data()
+        print('Data ready')
         self._prepare_model()
+        print('Model ready')
 
         self._init_logger(init_logger)
 
@@ -50,21 +52,6 @@ class Trainer:
             self.train_dataset,
             batch_sampler=RandomSortingSampler(self.train_dataset, batch_size=batch_size, shuffle=True),
             collate_fn=collate_function
-        )
-
-        data_cfg.sort = False
-        self.train_eval_dataset = dataset(data_cfg, SetType.train)
-        self.train_eval_dataloader = DataLoader(
-            self.train_eval_dataset,
-            batch_sampler=RandomSortingSampler(
-                self.train_eval_dataset, batch_size=self.config.train.validation_batch_size, shuffle=False,
-                dataset_length=20000),
-            collate_fn=collate_function
-        )
-
-        self.validation_dataset = dataset(data_cfg, SetType.validation)
-        self.validation_dataloader = DataLoader(
-            self.validation_dataset, batch_size=self.config.train.validation_batch_size, collate_fn=collate_function
         )
 
     def _prepare_model(self):
