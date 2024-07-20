@@ -12,4 +12,3 @@ model_cfg.eps = 1e-5
 model_cfg.dropout_rate = 0.1
 model_cfg.activation = 'GELU'  # from (ReLU, GELU)
 model_cfg.attention_bias = False
-

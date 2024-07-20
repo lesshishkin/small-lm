@@ -1,100 +1,7 @@
 import torch
 from torch import nn
-
+from typing import Optional, Tuple
 from models.modules import ScaledDotProductAttention, ScaledDotProductAttentionSimple
-
-
-class SingleHeadAttention(nn.Module):
-    """A class for implementing Single-Head Attention block (for explanation simplicity).
-
-    For each sample this block makes projections for queries, keys and values and a final projection
-        of SDPA result as follows:
-            Q_projection = Q * W_Q,
-            K_projection = K * W_K,
-            V_projection = V * W_V,
-
-            SHA(Q, K, V) = SDPA(Q_projection, K_projection, V_projection) * W_O,
-
-            where:
-                - Q is of shape (M, d_model), K and V are each of shape (N, d_model)
-                - W_Q, W_K, W_V are trainable parameters of shape (d_model, d_k)
-                - W_O are trainable parameters of shape (d_k, d_model) that make projection back to d_model dimension
-    """
-
-    def __init__(self, config):
-        """Layers initialization."""
-        super(SingleHeadAttention, self).__init__()
-        d_k = config.d_model // config.heads_num
-        self.scaled_dot_product_attention = ScaledDotProductAttentionSimple(d_k)
-
-        self.weights_q = nn.Linear(config.d_model, d_k, bias=config.attention_bias)
-        self.weights_k = nn.Linear(config.d_model, d_k, bias=config.attention_bias)
-        self.weights_v = nn.Linear(config.d_model, d_k, bias=config.attention_bias)
-        self.weights_o = nn.Linear(d_k, config.d_model, bias=config.attention_bias)
-
-        self._init_weights()
-
-    def _init_weights(self):
-        """Weights initialization."""
-        nn.init.xavier_uniform_(self.weights_q.weight)
-        nn.init.xavier_uniform_(self.weights_k.weight)
-        nn.init.xavier_uniform_(self.weights_v.weight)
-        nn.init.xavier_uniform_(self.weights_o.weight)
-
-        if self.weights_q.bias is not None:  # True means that all weights have bias too
-            nn.init.normal_(self.weights_q.bias, std=1e-6)
-            nn.init.normal_(self.weights_k.bias, std=1e-6)
-            nn.init.normal_(self.weights_v.bias, std=1e-6)
-            nn.init.normal_(self.weights_o.bias, std=1e-6)
-
-    def forward(self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor,
-                mask: torch.Tensor = None) -> torch.Tensor:
-        """Forward pass for the Single-Head Attention block.
-
-         Args:
-            queries: Query tensor of shape (batch size, M, d_model).
-            keys: Key tensor of shape (batch size, N, d_model).
-            values: Value tensor of shape (batch size, N, d_model).
-            mask: sequence mask with ones at positions that should be masked out
-
-        Returns:
-            Tensor of shape (batch size, M, d_model)
-        """
-        queries_projection = self.weights_q(queries)
-        keys_projection = self.weights_k(keys)
-        values_projection = self.weights_v(values)
-
-        attention = self.scaled_dot_product_attention(queries_projection, keys_projection, values_projection, mask)
-        out = self.weights_o(attention)
-
-        return out
-
-
-class MultiHeadAttentionSimple(nn.Module):
-    """A class for implementing Multi-Head Attention block with Single-Head Attention blocks (for explanation simplicity).
-
-    This block simply sums up all Single-Head Attention blocks results.
-    """
-
-    def __init__(self, config):
-        """Layers initialization."""
-        super(MultiHeadAttentionSimple, self).__init__()
-        self.heads = nn.ModuleList([SingleHeadAttention(config) for _ in range(config.heads_num)])
-
-    def forward(self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor,
-                mask: torch.Tensor = None) -> torch.Tensor:
-        """Forward pass for the Multi-Head Attention block.
-
-        Args:
-            queries: Query tensor of shape (batch size, M, d_model).
-            keys: Key tensor of shape (batch size, N, d_model).
-            values: Value tensor of shape (batch size, N, d_model).
-            mask: sequence mask with ones at positions that should be masked out
-
-        Returns:
-            Tensor of shape (batch size, M, d_model)
-        """
-        return torch.stack([head(queries, keys, values, mask) for head in self.heads]).sum(0)
 
 
 class MultiHeadAttention(nn.Module):
@@ -237,3 +144,47 @@ class LayerNorm(nn.Module):
         var = inputs.var(-1, keepdim=True, unbiased=False)
         normalized_inputs = (inputs - mean) / torch.sqrt(var + self.eps)
         return self.gamma * normalized_inputs + self.beta
+
+
+class RMSNorm(torch.nn.Module):
+    """RMSNorm like LLaMA3"""
+    def __init__(self, dim: int, eps: float = 1e-6):
+        super().__init__()
+        self.eps = eps
+        self.weight = nn.Parameter(torch.ones(dim))
+
+    def _norm(self, x):
+        return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
+
+    def forward(self, x):
+        output = self._norm(x.float()).type_as(x)
+        return output * self.weight
+
+
+class FeedForwardLLaMA3(nn.Module):
+    """FF block like LLaMA3. 3 layers"""
+    """"""
+    # TODO replace ...parallel... with torch linear layers
+    def __init__(
+        self,
+        dim: int,
+        hidden_dim: int,
+        multiple_of: int,
+        ffn_dim_multiplier: Optional[float],
+    ):
+        super().__init__()
+        hidden_dim = int(2 * hidden_dim / 3)
+        # custom dim factor multiplier
+        if ffn_dim_multiplier is not None:
+            hidden_dim = int(ffn_dim_multiplier * hidden_dim)
+        hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
+
+        self.w1 = ColumnParallelLinear(
+            dim, hidden_dim, bias=False, gather_output=False, init_method=lambda x: x
+        )
+        self.w2 = RowParallelLinear(
+            hidden_dim, dim, bias=False, input_is_parallel=True, init_method=lambda x: x
+        )
+        self.w3 = ColumnParallelLinear(
+            dim, hidden_dim, bias=False, gather_output=False, init_method=lambda x: x
+        )
