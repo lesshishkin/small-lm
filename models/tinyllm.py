@@ -8,21 +8,21 @@ from typing import Optional, Tuple
 
 class TransformerBlock(nn.Module):
     # TODO
-    def __init__(self, layer_id: int, args: ModelArgs):
+    def __init__(self, layer_id: int, config):
         super().__init__()
-        self.n_heads = args.n_heads
-        self.dim = args.dim
-        self.head_dim = args.dim // args.n_heads
-        self.attention = Attention(args)
+        self.n_heads = config.n_heads
+        self.dim = config.dim
+        self.head_dim = config.dim // config.n_heads
+        self.attention = Attention(config)
         self.feed_forward = FeedForward(
-            dim=args.dim,
-            hidden_dim=4 * args.dim,
-            multiple_of=args.multiple_of,
-            ffn_dim_multiplier=args.ffn_dim_multiplier,
+            dim=config.dim,
+            hidden_dim=4 * config.dim,
+            multiple_of=config.multiple_of,     # todo разобраться с этим
+            ffn_dim_multiplier=config.ffn_dim_multiplier,
         )
         self.layer_id = layer_id
-        self.attention_norm = RMSNorm(args.dim, eps=args.norm_eps)
-        self.ffn_norm = RMSNorm(args.dim, eps=args.norm_eps)
+        self.attention_norm = RMSNorm(config.dim, eps=config.norm_eps)
+        self.ffn_norm = RMSNorm(config.dim, eps=config.norm_eps)
 
     def forward(
         self,
@@ -39,6 +39,21 @@ class TransformerBlock(nn.Module):
 class TinyLLM(nn.Module):
     """TinyLLM -- tiny but large. Like LLaMA3"""
 
-    def __init__(self):
+    def __init__(self, config):
         super(TinyLLM, self).__init__()
         # TODO
+
+        self.freqs_cis = self.precompute_freqs_cis(
+            config.dim // config.n_heads,
+            config.max_seq_len * 2,
+            config.rope_theta,
+        )
+
+    @staticmethod
+    def precompute_freqs_cis(dim: int, end: int, device, theta: float = 10000.0):
+        """For RoPE. Заранее считаем комплексные множители"""
+        freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
+        t = torch.arange(end, device=device, dtype=torch.float32)
+        freqs = torch.outer(t, freqs)
+        freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
+        return freqs_cis

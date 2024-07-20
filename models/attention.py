@@ -5,14 +5,6 @@ from typing import Optional, Tuple
 import torch.nn.functional as F
 
 
-def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0):
-    freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
-    t = torch.arange(end, device=freqs.device, dtype=torch.float32)
-    freqs = torch.outer(t, freqs)
-    freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
-    return freqs_cis
-
-
 def reshape_for_broadcast(freqs_cis: torch.Tensor, x: torch.Tensor):
     ndim = x.ndim
     assert 0 <= 1 < ndim
@@ -49,19 +41,19 @@ def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
 
 
 class Attention(nn.Module):
-    """Attention like LLaMA3 but without KV cache and parallelism"""
+    """Grouped Multi-Query Attention like LLaMA3 but without KV cache and parallelism."""
     def __init__(self, config):
         super().__init__()
-        # GQMA
-        self.n_kv_heads = config.model.n_heads if config.model.n_kv_heads is None else config.model.n_kv_heads
-        self.n_heads = config.model.n_heads
+        # GMQA
+        self.n_kv_heads = config.n_heads if config.n_kv_heads is None else config.n_kv_heads
+        self.n_heads = config.n_heads
         self.n_rep = self.n_heads // self.n_kv_heads
-        self.head_dim = config.model.dim // config.model.n_heads
+        self.head_dim = config.dim // config.n_heads
 
-        self.wq = nn.Linear(config.model.dim, config.model.n_heads * self.head_dim, bias=False)
-        self.wk = nn.Linear(config.model.dim, self.n_kv_heads * self.head_dim, bias=False)
-        self.wv = nn.Linear(config.model.dim, self.n_kv_heads * self.head_dim, bias=False)
-        self.wo = nn.Linear(config.model.n_heads * self.head_dim, config.model.dim, bias=False)
+        self.wq = nn.Linear(config.dim, config.n_heads * self.head_dim, bias=False)
+        self.wk = nn.Linear(config.dim, self.n_kv_heads * self.head_dim, bias=False)
+        self.wv = nn.Linear(config.dim, self.n_kv_heads * self.head_dim, bias=False)
+        self.wo = nn.Linear(config.n_heads * self.head_dim, config.dim, bias=False)
 
         nn.init.xavier_uniform_(self.wq.weight)
         nn.init.xavier_uniform_(self.wk.weight)
@@ -81,7 +73,7 @@ class Attention(nn.Module):
         keys = xk
         values = xv
 
-        # GQMA
+        # GMQA
         # todo  check dims
         # repeat k/v heads if n_kv_heads < n_heads
         keys = repeat_kv(keys, self.n_rep)  # (bs, seqlen, n_local_heads, head_dim)
