@@ -67,17 +67,13 @@ class Trainer:
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        model_class = getattr(sys.modules[__name__], self.config.model.name)
-        model_kwargs = {
-            'vocabulary_size': self.tokenizer.vocab_size(),
-        }
-
-        self.model = model_class(self.config, **model_kwargs).to(self.device)
+        self.model = TinyLLM(self.config, vocab_size=self.tokenizer.vocab_size()).to(self.device)
 
         self.optimizer = getattr(optim, self.config.train.optimizer)(
             self.model.parameters(), lr=self.config.train.learning_rate,
             **self.config.train.optimizer_params[self.config.train.optimizer]
         )
+
         # todo разобраться с этим вычитанием, нужно ли нам это
         self.criterion = nn.CrossEntropyLoss(
             ignore_index=self.config.data.special_tokens.index('<PAD>') - 1,
