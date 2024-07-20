@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 
 from dataset.russian_stories_dataset import RussianStoriesDataset
 from executors.sampler import RandomSortingSampler
-from models.transformer import TinyLLM
+from models.tinyllm import TinyLLM
 from utils.common_functions import set_seed
 from utils.data_utils import get_sequence_mask, collate_function
 from utils.enums import SetType, InferenceType
