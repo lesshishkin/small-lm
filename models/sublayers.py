@@ -148,6 +148,7 @@ class LayerNorm(nn.Module):
 
 class RMSNorm(torch.nn.Module):
     """RMSNorm like LLaMA3"""
+    # todo check dims
     def __init__(self, dim: int, eps: float = 1e-6):
         super().__init__()
         self.eps = eps
@@ -163,7 +164,6 @@ class RMSNorm(torch.nn.Module):
 
 class FeedForwardLLaMA3(nn.Module):
     """FF block like LLaMA3. 3 layers"""
-    """"""
     # TODO replace ...parallel... with torch linear layers
     def __init__(
         self,
