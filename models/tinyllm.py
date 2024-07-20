@@ -39,9 +39,21 @@ class TransformerBlock(nn.Module):
 class TinyLLM(nn.Module):
     """TinyLLM -- tiny but large. Like LLaMA3"""
 
-    def __init__(self, config):
+    def __init__(self, config, vocab_size):
         super(TinyLLM, self).__init__()
-        # TODO
+
+        self.config = config
+        self.vocab_size = vocab_size
+        self.n_layers = config.n_layers
+
+        self.tok_embeddings = nn.Embedding(self.vocab_size, config.dim)
+
+        self.layers = torch.nn.ModuleList()
+        for layer_id in range(config.n_layers):
+            self.layers.append(TransformerBlock(layer_id, config))
+
+        self.norm = RMSNorm(config.dim, eps=config.norm_eps)
+        self.output = nn.Linear(config.dim, self.vocab_size, bias=False)
 
         self.freqs_cis = self.precompute_freqs_cis(
             config.dim // config.n_heads,
@@ -57,3 +69,26 @@ class TinyLLM(nn.Module):
         freqs = torch.outer(t, freqs)
         freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
         return freqs_cis
+
+    def forward(self, tokens: torch.Tensor, start_pos: int):
+        _bsz, seqlen = tokens.shape
+        h = self.tok_embeddings(tokens)
+        self.freqs_cis = self.freqs_cis.to(h.device)
+        freqs_cis = self.freqs_cis[start_pos : start_pos + seqlen]
+
+        # todo разобраться с масками в этой реализации
+        mask = None
+        if seqlen > 1:
+            mask = torch.full((seqlen, seqlen), float("-inf"), device=tokens.device)
+            mask = torch.triu(mask, diagonal=1)
+
+            mask = torch.hstack(
+                [torch.zeros((seqlen, start_pos), device=tokens.device), mask]
+            ).type_as(h)
+
+        for layer in self.layers:
+            h = layer(h, start_pos, freqs_cis, mask)
+        h = self.norm(h)
+        output = self.output(h).float()
+
+        return output
