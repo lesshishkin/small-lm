@@ -1,6 +1,14 @@
 import youtokentome as yttm
 
 
+def find_longest_seq(dataset_path):
+    import pickle
+    with open(dataset_path, 'rb') as f:
+        data = pickle.load(f)
+
+    print(len(max(data, key=len)))
+    # longest: 1071
+
 def count_tokens_in_tokenized_dataset(dataset_path):
     import pickle
     with open(dataset_path, 'rb') as f:
