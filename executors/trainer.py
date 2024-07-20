@@ -133,7 +133,8 @@ class Trainer:
         decoder_mask = decoder_mask.to(self.device)
 
         # todo разобраться с тем, что модель будет выдавать
-        outputs, _, _, _ = self.model(decoder_inputs, decoder_mask)
+        start_pos = 0
+        outputs = self.model(decoder_inputs, start_pos, decoder_mask)
         # todo разобраться с этим вычитанием единицы
         loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), decoder_outputs.reshape(-1) - 1)
 
@@ -382,16 +383,17 @@ class Trainer:
 
         This feature can be useful for debugging and evaluating your model's ability to learn and update its weights.
         """
-        self.model.train()
 
-        pad_idx = self.config.data.preprocessing.special_tokens.index("<PAD>")
+
+        pad_idx = self.config.data.special_tokens.index("<PAD>")
         batch = next(iter(self.train_dataloader))
 
-        from torchsummary import summary
+        from torchinfo import summary
 
-        input_shape = batch[1].shape()
+        test_data = [batch[1], 0, batch[3]]
+        summary(self.model, input_data=test_data)
 
-        summary(self.model, input_size=input_shape, dtypes=[torch.int64])
+        self.model.train()
 
         for step in range(self.config.overfit.num_iterations):
             loss, output, decoder_outputs = self.make_step(batch, update_model=True)
