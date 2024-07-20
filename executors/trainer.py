@@ -67,7 +67,7 @@ class Trainer:
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.model = TinyLLM(self.config, vocab_size=self.tokenizer.vocab_size()).to(self.device)
+        self.model = TinyLLM(self.config.model, vocab_size=self.tokenizer.vocab_size()).to(self.device)
 
         self.optimizer = getattr(optim, self.config.train.optimizer)(
             self.model.parameters(), lr=self.config.train.learning_rate,
@@ -384,6 +384,12 @@ class Trainer:
 
         pad_idx = self.config.data.preprocessing.special_tokens.index("<PAD>")
         batch = next(iter(self.train_dataloader))
+
+        from torchsummary import summary
+
+        input_shape = batch[1].shape()
+
+        summary(self.model, input_size=input_shape, dtypes=[torch.int64])
 
         for step in range(self.config.overfit.num_iterations):
             loss, output, decoder_outputs = self.make_step(batch, update_model=True)

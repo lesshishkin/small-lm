@@ -1,5 +1,5 @@
-# from executors.trainer import Trainer
-# from configs.experiment_config import experiment_cfg
+from executors.trainer import Trainer
+from configs.experiment_config import experiment_cfg
 
 
 # def train():
@@ -8,4 +8,5 @@
 
 
 if __name__ == '__main__':
-    pass
+    trainer = Trainer(experiment_cfg)
+    trainer.batch_overfit()
