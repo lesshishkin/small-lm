@@ -36,8 +36,9 @@ def apply_rotary_emb(
 
 
 class Attention(nn.Module):
-    """Attention like LLaMA3"""
+    """Attention like LLaMA3, but without KV cache and parallelism"""
     # todo remove KV cache, remove parallel, fi devices
+    # todo n_kv_heads -- работа с GMQA. надо попробовать реализовать, чтобы можно было сделать модель поглубже
     def __init__(self, args: ModelArgs):
         super().__init__()
         self.n_kv_heads = args.n_heads if args.n_kv_heads is None else args.n_kv_heads
