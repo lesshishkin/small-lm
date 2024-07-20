@@ -76,9 +76,9 @@ class Trainer:
             **self.config.train.optimizer_params[self.config.train.optimizer]
         )
 
-        # todo разобраться с этим вычитанием, нужно ли нам это
+        # todo разобраться с этим вычитанием, нужно ли нам это (убрал)
         self.criterion = nn.CrossEntropyLoss(
-            ignore_index=self.config.data.special_tokens.index('<PAD>') - 1,
+            ignore_index=self.config.data.special_tokens.index('<PAD>'),
             label_smoothing=self.config.train.label_smoothing
         )
 
@@ -135,8 +135,7 @@ class Trainer:
         # todo разобраться с тем, что модель будет выдавать
         start_pos = 0
         outputs = self.model(decoder_inputs, start_pos, decoder_mask)
-        # todo разобраться с этим вычитанием единицы
-        loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), decoder_outputs.reshape(-1) - 1)
+        loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), decoder_outputs.reshape(-1))
 
         if update_model:
             self.optimizer.zero_grad()
@@ -190,8 +189,8 @@ class Trainer:
         for step, batch in enumerate(self.train_dataloader):
             loss, output, decoder_outputs = self.make_step(batch, update_model=True)
             train_losses.append(loss)
-            # todo эта единица
-            prediction_with_pad = output.argmax(axis=-1) + 1
+            # todo эта единица (убрал)
+            prediction_with_pad = output.argmax(axis=-1)
             train_predictions.extend(
                 [prediction_with_pad[i][decoder_outputs[i] != pad_idx].tolist() for i in range(len(decoder_outputs))]
             )
@@ -393,6 +392,7 @@ class Trainer:
         test_data = [batch[1], 0, batch[3]]
         summary(self.model, input_data=test_data)
 
+        self.scheduler = LambdaLR(self.optimizer, lr_lambda=lambda epoch: 1.0)
         self.model.train()
 
         for step in range(self.config.overfit.num_iterations):
@@ -402,13 +402,16 @@ class Trainer:
             if step % 10 == 0:
                 prediction_with_pad = output.argmax(axis=-1)
                 predictions = [
-                    prediction_with_pad[i][decoder_outputs[i] != pad_idx].tolist() for i in range(len(decoder_outputs))
+                    prediction_with_pad[i].tolist() for i in range(len(prediction_with_pad))
                 ]
+                # predictions = [
+                #     prediction_with_pad[i][decoder_outputs[i] != pad_idx].tolist() for i in range(len(decoder_outputs))
+                # ]
 
                 random_sample_num = random.randint(0, len(batch) - 1)
                 print(f'Step: {step}')
                 decoded_prediction = self.tokenizer.decode(predictions[random_sample_num])
-                decoded_target = self.tokenizer.decode(decoder_outputs[random_sample_num])
+                decoded_target = self.tokenizer.decode(decoder_outputs[random_sample_num].tolist())
                 output_to_show = f'Prediction: {decoded_prediction}\n' \
                                  f'Target:     {decoded_target}\n'
                 print(output_to_show)

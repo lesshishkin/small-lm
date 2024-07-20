@@ -14,8 +14,8 @@ experiment_cfg.num_epochs = 100
 
 # Train parameters
 experiment_cfg.train = EasyDict()
-experiment_cfg.train.batch_size = 64
-experiment_cfg.train.learning_rate = 1e-3
+experiment_cfg.train.batch_size = 32
+experiment_cfg.train.learning_rate = 1e-4
 experiment_cfg.train.weight_decay = 0
 experiment_cfg.train.warmup_steps = 1000
 experiment_cfg.train.label_smoothing = 0
