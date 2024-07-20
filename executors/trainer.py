@@ -67,7 +67,9 @@ class Trainer:
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.model = TinyLLM(self.config.model, vocab_size=self.tokenizer.vocab_size()).to(self.device)
+        self.model = TinyLLM(self.config.model,
+                             vocab_size=self.tokenizer.vocab_size(),
+                             device=self.device).to(self.device)
 
         self.optimizer = getattr(optim, self.config.train.optimizer)(
             self.model.parameters(), lr=self.config.train.learning_rate,
@@ -82,7 +84,7 @@ class Trainer:
 
         self.scheduler = get_cosine_schedule_with_warmup(self.optimizer,
                                                          num_warmup_steps=self.config.train.warmup_steps,
-                                                         num_cycles=len(self.train_dataloader)*self.config.num_epochs)
+                                                         num_training_steps=len(self.train_dataloader)*self.config.num_epochs)
 
         # self.metric = evaluate.load("bleu")
 

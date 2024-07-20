@@ -39,7 +39,7 @@ class TransformerBlock(nn.Module):
 class TinyLLM(nn.Module):
     """TinyLLM -- tiny but large. Like LLaMA3"""
     # TODO подумать куда ставить дропауты
-    def __init__(self, config, vocab_size):
+    def __init__(self, config, vocab_size, device):
         super(TinyLLM, self).__init__()
 
         self.config = config
@@ -58,6 +58,7 @@ class TinyLLM(nn.Module):
         self.freqs_cis = self.precompute_freqs_cis(
             config.dim // config.n_heads,
             config.max_seq_len * 2,
+            device,
             config.rope_theta,
         )
 
