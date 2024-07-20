@@ -38,7 +38,7 @@ class TransformerBlock(nn.Module):
 
 class TinyLLM(nn.Module):
     """TinyLLM -- tiny but large. Like LLaMA3"""
-
+    # TODO подумать куда ставить дропауты
     def __init__(self, config, vocab_size):
         super(TinyLLM, self).__init__()
 
