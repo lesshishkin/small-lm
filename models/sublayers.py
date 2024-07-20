@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from typing import Optional, Tuple
-from models.modules import ScaledDotProductAttention, ScaledDotProductAttentionSimple
+from models.modules import ScaledDotProductAttention
 import torch.nn.functional as F
 
 
