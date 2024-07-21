@@ -53,7 +53,7 @@ class TinyLLM(nn.Module):
             self.layers.append(TransformerBlock(layer_id, config))
 
         self.norm = RMSNorm(config.dim, eps=config.norm_eps)
-        # self.output = nn.Linear(config.dim, self.vocab_size, bias=False)
+        self.output = nn.Linear(config.dim, self.vocab_size, bias=False)
 
         self.freqs_cis = self.precompute_freqs_cis(
             config.dim // config.n_heads,
@@ -82,6 +82,7 @@ class TinyLLM(nn.Module):
         h = self.norm(h)
 
         # используем слой с эмбеддингами в качестве последнего слоя
-        output = torch.matmul(h, self.tok_embeddings.weight.T).float()
-
+        # output = torch.matmul(h, self.tok_embeddings.weight.T).float()
+        output = self.output(h)
+        
         return output
