@@ -5,7 +5,7 @@ model_cfg.name = 'TinyLLM'
 
 model_cfg.dim = 512
 model_cfg.d_ff = 2048
-model_cfg.max_seq_len = 1024
+model_cfg.max_seq_len = 2048
 model_cfg.n_heads = 8
 model_cfg.n_kv_heads = 4    # GMQA
 model_cfg.n_layers = 6
