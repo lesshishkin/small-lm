@@ -4,7 +4,7 @@ from utils.common_functions import write_file, read_file
 from utils.enums import SetType
 
 
-class RussianStoriesDataset(Dataset):
+class TinyStoriesDataset(Dataset):
     """A class for Russian Tiny Stories Dataset."""
 
     def __init__(self, config, set_type: SetType):

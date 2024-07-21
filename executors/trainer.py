@@ -10,7 +10,7 @@ from torch import optim
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 
-from dataset.russian_stories_dataset import RussianStoriesDataset
+from dataset.russian_stories_dataset import TinyStoriesDataset
 from executors.sampler import RandomSortingSampler
 from models.tinyllm import TinyLLM
 from utils.common_functions import set_seed

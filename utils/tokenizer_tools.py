@@ -7,7 +7,9 @@ def find_longest_seq(dataset_path):
         data = pickle.load(f)
 
     print(len(max(data, key=len)))
-    # longest: 1071
+    # RU longest: 1071
+    # EN longest: 1189
+
 
 def count_tokens_in_tokenized_dataset(dataset_path):
     import pickle
@@ -22,14 +24,16 @@ def count_tokens_in_tokenized_dataset(dataset_path):
 
     print('Num tokens:', num_tokens)
     print('Num texts: ', num_texts)
+    # RU
     # Num tokens: 382_625_157
     # Num texts:  2_717_495
 
-def create_tokenizer():
-    train_data_path = "data/tinystories/train_v2_ru_prepared.txt"
-    model_path = "data/tinystories/ru_tinystories_tokenizer.model"
 
-    yttm.BPE.train(data=train_data_path, vocab_size=25000, model=model_path)
+def create_tokenizer(input_path, output_path, vocab_size):
+    train_data_path = input_path
+    model_path = output_path
+
+    yttm.BPE.train(data=train_data_path, vocab_size=vocab_size, model=model_path)
 
 
 def create_tokenized_dataset_file(input_path, output_path, tokenizer_model_path):
@@ -44,3 +48,12 @@ def create_tokenized_dataset_file(input_path, output_path, tokenizer_model_path)
 
     with open(output_path, 'wb') as pickle_file:
         pickle.dump(final_data, pickle_file)
+
+
+def create_vocab_file(model_path, output_path):
+    bpe = yttm.BPE(model=model_path)
+    vocab = bpe.vocab()
+
+    with open(output_path, 'w', encoding='utf-8') as file:
+        for item in vocab:
+            file.write(f'{item}\n')
