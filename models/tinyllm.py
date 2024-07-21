@@ -46,7 +46,7 @@ class TinyLLM(nn.Module):
         self.vocab_size = vocab_size
         self.n_layers = config.n_layers
 
-        self.tok_embeddings = nn.Embedding(self.vocab_size, config.dim, padding_idx=0)
+        self.tok_embeddings = nn.Embedding(self.vocab_size, config.dim, padding_idx=0, device=device)
 
         self.layers = torch.nn.ModuleList()
         for layer_id in range(config.n_layers):
