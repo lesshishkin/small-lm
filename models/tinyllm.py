@@ -65,7 +65,7 @@ class TinyLLM(nn.Module):
     @staticmethod
     def precompute_freqs_cis(dim: int, end: int, device, theta: float = 10000.0):
         """For RoPE. Заранее считаем комплексные множители"""
-        freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
+        freqs = 1.0 / (theta ** (torch.arange(0, dim, 2, device=device)[: (dim // 2)].float() / dim))
         t = torch.arange(end, device=device, dtype=torch.float32)
         freqs = torch.outer(t, freqs)
         freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
@@ -84,5 +84,5 @@ class TinyLLM(nn.Module):
         # используем слой с эмбеддингами в качестве последнего слоя
         # output = torch.matmul(h, self.tok_embeddings.weight.T).float()
         output = self.output(h)
-        
+
         return output
