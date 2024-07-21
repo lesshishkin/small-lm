@@ -388,7 +388,7 @@ class Trainer:
 
         from torchinfo import summary
 
-        test_data = [batch[1], 0, batch[3]]
+        test_data = [batch[1].to(self.device), 0, batch[3].to(self.device)]
         summary(self.model, input_data=test_data)
 
         self.scheduler = LambdaLR(self.optimizer, lr_lambda=lambda epoch: 1.0)
