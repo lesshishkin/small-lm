@@ -57,3 +57,32 @@ def create_vocab_file(model_path, output_path):
     with open(output_path, 'w', encoding='utf-8') as file:
         for item in vocab:
             file.write(f'{item}\n')
+
+
+def divide_dataset():
+    import pickle
+
+    with open('data/tinystories/train_v2_en_tokenized.pickle', 'rb') as file:
+        data = pickle.load(file)
+
+    # Проверка, что данные действительно являются списком списков
+    if not all(isinstance(i, list) for i in data):
+        raise ValueError("Содержимое файла должно быть списком списков")
+
+    # Определение размера каждой части
+    part_size = len(data) // 4
+
+    # Разделение данных на 4 части
+    parts = [data[i * part_size: (i + 1) * part_size] for i in range(4)]
+
+    # Обработка оставшихся элементов, если их количество не делится на 4
+    if len(data) % 4 != 0:
+        parts[-1].extend(data[4 * part_size:])
+
+    # Сохранение каждой части в отдельный pickle файл
+    for i, part in enumerate(parts):
+        with open(f'train_v2_en_tokenized_part_{i + 1}.pickle', 'wb') as file:
+            pickle.dump(part, file)
+
+    print(
+        "Данные успешно разделены и сохранены в файлы output_part_1.pkl, output_part_2.pkl, output_part_3.pkl, output_part_4.pkl")

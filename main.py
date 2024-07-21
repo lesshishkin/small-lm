@@ -1,7 +1,7 @@
 from executors.trainer import Trainer
 from configs.experiment_config import experiment_cfg
 from utils.tokenizer_tools import create_tokenizer, create_tokenized_dataset_file, count_tokens_in_tokenized_dataset, \
-    find_longest_seq, create_vocab_file
+    find_longest_seq, create_vocab_file, divide_dataset
 import youtokentome as yttm
 
 
@@ -20,5 +20,5 @@ if __name__ == '__main__':
     # vocab_size = 25_000
     #
     # create_vocab_file(bpe_model, vocab_file)
-    trainer = Trainer(experiment_cfg)
-    trainer.batch_overfit()
+    # trainer = Trainer(experiment_cfg)
+    # trainer.batch_overfit()
