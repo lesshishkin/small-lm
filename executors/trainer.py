@@ -76,7 +76,6 @@ class Trainer:
             **self.config.train.optimizer_params[self.config.train.optimizer]
         )
 
-        # todo разобраться с этим вычитанием, нужно ли нам это (убрал)
         self.criterion = nn.CrossEntropyLoss(
             ignore_index=self.config.data.special_tokens.index('<PAD>'),
             label_smoothing=self.config.train.label_smoothing
@@ -132,8 +131,7 @@ class Trainer:
         decoder_outputs = decoder_outputs.to(self.device)
         decoder_mask = decoder_mask.to(self.device)
 
-        # todo разобраться с тем, что модель будет выдавать
-        start_pos = 0
+        start_pos = 0   # вдруг пригодится
         outputs = self.model(decoder_inputs, start_pos, decoder_mask)
         loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), decoder_outputs.reshape(-1))
 
