@@ -71,6 +71,7 @@ class Trainer:
                              vocab_size=self.tokenizer.vocab_size(),
                              device=self.device).to(self.device)
 
+        self.optimizer = optim.AdamW()
         self.optimizer = getattr(optim, self.config.train.optimizer)(
             self.model.parameters(), lr=self.config.train.learning_rate,
             **self.config.train.optimizer_params[self.config.train.optimizer]
@@ -189,7 +190,6 @@ class Trainer:
         for step, batch in enumerate(self.train_dataloader):
             loss, output, decoder_outputs = self.make_step(batch, update_model=True)
             train_losses.append(loss)
-            # todo эта единица (убрал)
             prediction_with_pad = output.argmax(axis=-1)
             train_predictions.extend(
                 [prediction_with_pad[i][decoder_outputs[i] != pad_idx].tolist() for i in range(len(decoder_outputs))]
