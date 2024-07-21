@@ -124,7 +124,7 @@ class Trainer:
 
         Returns:
             loss: loss function value
-            output: model output (batch_size x num_classes) todo ????
+            output: model output (batch_size x num_classes)
             decoder_outputs: targets
         """
         _, decoder_inputs, decoder_outputs, decoder_mask = batch

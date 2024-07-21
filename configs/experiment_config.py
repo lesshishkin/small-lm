@@ -14,10 +14,10 @@ experiment_cfg.num_epochs = 100
 
 # Train parameters
 experiment_cfg.train = EasyDict()
-experiment_cfg.train.batch_size = 32
-experiment_cfg.train.learning_rate = 1e-4
-experiment_cfg.train.warmup_steps = 1000
-experiment_cfg.train.label_smoothing = 0
+experiment_cfg.train.batch_size = 64
+experiment_cfg.train.learning_rate = 1e-5
+experiment_cfg.train.warmup_steps = 500
+experiment_cfg.train.label_smoothing = 0.01
 experiment_cfg.train.optimizer = 'AdamW'  # from (Adam, AdamW)
 experiment_cfg.train.optimizer_params = {
     'Adam': {'betas': (0.9, 0.999), 'eps': 1e-8}, 'AdamW': {'betas': (0.9, 0.98), 'eps': 1e-9, 'weight_decay': 1e-4}
@@ -27,7 +27,7 @@ experiment_cfg.train.checkpoint_from_epoch = None
 experiment_cfg.train.log_frequency = 100
 experiment_cfg.train.log_window = 50
 experiment_cfg.train.validation_frequency = 5000
-experiment_cfg.train.validation_batch_size = 32
+experiment_cfg.train.validation_batch_size = 64
 experiment_cfg.train.inference_frequency = 2
 
 # Overfit parameters
