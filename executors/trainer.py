@@ -83,7 +83,7 @@ class Trainer:
 
         self.scheduler = get_cosine_schedule_with_warmup(self.optimizer,
                                                          num_warmup_steps=self.config.train.warmup_steps,
-                                                         num_training_steps=len(self.train_dataloader)*self.config.num_epochs)
+                                                         num_training_steps=self.config.num_steps)
 
         # self.metric = evaluate.load("bleu")
 

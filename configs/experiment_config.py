@@ -10,7 +10,8 @@ ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 
 experiment_cfg = EasyDict()
 experiment_cfg.seed = 0
-experiment_cfg.num_epochs = 100
+experiment_cfg.num_epochs = 1
+experiment_cfg.num_steps = 85_000
 
 # Train parameters
 experiment_cfg.train = EasyDict()
@@ -24,8 +25,8 @@ experiment_cfg.train.optimizer_params = {
 }
 experiment_cfg.train.continue_train = False
 experiment_cfg.train.checkpoint_from_epoch = None
-experiment_cfg.train.log_frequency = 100
-experiment_cfg.train.log_window = 50
+experiment_cfg.train.log_frequency = 10
+experiment_cfg.train.log_window = 10
 experiment_cfg.train.validation_frequency = 5000
 experiment_cfg.train.validation_batch_size = 32
 experiment_cfg.train.inference_frequency = 2
@@ -45,7 +46,7 @@ experiment_cfg.neptune.dependencies_path = os.path.join(ROOT_DIR, 'requirements.
 # Checkpoints parameters
 experiment_cfg.checkpoints_dir = os.path.join(ROOT_DIR, 'experiments', experiment_cfg.neptune.experiment_name,
                                               'checkpoints')
-experiment_cfg.checkpoint_save_frequency = 10_000
+experiment_cfg.checkpoint_save_frequency = 3_000
 experiment_cfg.checkpoint_name = 'checkpoint_%s'
 experiment_cfg.best_checkpoint_name = 'best_checkpoint'
 
