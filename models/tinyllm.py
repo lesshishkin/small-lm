@@ -23,6 +23,8 @@ class TransformerBlock(nn.Module):
         self.layer_id = layer_id
         self.attention_norm = RMSNorm(config.dim, eps=config.norm_eps)
         self.ffn_norm = RMSNorm(config.dim, eps=config.norm_eps)
+        self.ff_dropout = nn.Dropout(config.dropout_rate)
+        self.attention_dropout = nn.Dropout(config.dropout_rate)
 
     def forward(
         self,
@@ -31,14 +33,13 @@ class TransformerBlock(nn.Module):
         freqs_cis: torch.Tensor,
         mask,
     ):
-        h = x + self.attention(self.attention_norm(x), start_pos, freqs_cis, mask)
-        out = h + self.feed_forward(self.ffn_norm(h))
+        h = x + self.attention_dropout(self.attention(self.attention_norm(x), start_pos, freqs_cis, mask))
+        out = h + self.ff_dropout(self.feed_forward(self.ffn_norm(h)))
         return out
 
 
 class TinyLLM(nn.Module):
     """TinyLLM -- tiny but large. Like LLaMA3"""
-    # TODO подумать куда ставить дропауты
     def __init__(self, config, vocab_size, device):
         super(TinyLLM, self).__init__()
 
