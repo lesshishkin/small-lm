@@ -20,5 +20,5 @@ if __name__ == '__main__':
     # vocab_size = 25_000
     #
     # create_vocab_file(bpe_model, vocab_file)
-    # trainer = Trainer(experiment_cfg)
-    # trainer.batch_overfit()
+    trainer = Trainer(experiment_cfg)
+    trainer.batch_overfit()
