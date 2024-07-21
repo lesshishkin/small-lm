@@ -215,7 +215,7 @@ class Trainer:
                 self.logger.save_metrics(SetType.train.name, 'generated_text', output_to_show, step=steps_done + step)
                 train_losses, train_predictions, train_decoder_outputs = [], [], []
 
-            if step % self.config.checkpoint_save_frequency == 0:
+            if step % self.config.checkpoint_save_frequency == 0 and step != 0:
                 self.save(self.config.checkpoint_name % (steps_done + step))
 
         return best_metric
