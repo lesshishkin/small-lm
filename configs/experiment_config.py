@@ -15,7 +15,7 @@ experiment_cfg.num_steps = 85_000
 
 # Train parameters
 experiment_cfg.train = EasyDict()
-experiment_cfg.train.batch_size = 32
+experiment_cfg.train.batch_size = 16
 experiment_cfg.train.learning_rate = 1e-5
 experiment_cfg.train.warmup_steps = 500
 experiment_cfg.train.label_smoothing = 0.01
@@ -28,7 +28,7 @@ experiment_cfg.train.checkpoint_from_epoch = None
 experiment_cfg.train.log_frequency = 10
 experiment_cfg.train.log_window = 10
 experiment_cfg.train.validation_frequency = 5000
-experiment_cfg.train.validation_batch_size = 32
+experiment_cfg.train.validation_batch_size = 16
 experiment_cfg.train.inference_frequency = 2
 
 # Overfit parameters
