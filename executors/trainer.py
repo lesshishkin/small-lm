@@ -195,6 +195,7 @@ class Trainer:
         pad_idx = self.config.data.special_tokens.index("<PAD>")
 
         for step, batch in enumerate(self.train_dataloader):
+            print(step) # todo delete after test
             loss, output, decoder_outputs = self.make_step(batch, update_model=True)
             train_losses.append(loss)
             prediction_with_pad = output.argmax(axis=-1)
