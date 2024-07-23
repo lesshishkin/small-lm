@@ -58,6 +58,16 @@ class Trainer:
             collate_fn=collate_function
         )
 
+        # предварительные действия:
+        # 1. узнать какая длина создает проблему с памятью
+        # 2. узнать сколько за раз сможет обработать кагл
+        # 3. сортируем датасет по длине
+        # 4. удалим элементы датасета с длиной больше пороговой
+        # 5. убрать остаток, который не войдет в батч
+        # 6. перемешиваем кусками по 16 (батч) штук
+        # 7. разделяем на части, кратные 16
+        # 8. батч_семплер тот же
+
         self.validation_dataset = dataset(data_cfg, SetType.validation)
         self.validation_dataloader = DataLoader(
             self.validation_dataset, batch_size=self.config.train.validation_batch_size, collate_fn=collate_function
