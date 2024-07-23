@@ -253,10 +253,10 @@ class Trainer:
         # _, train_eval_metric = self.evaluate(self.train_eval_dataloader, inference=True)
         # self.update_best_params(valid_metric, best_metric)
 
-        last_step = self.config.num_epochs * len(self.train_dataloader) - 1
+        # last_step = self.config.num_epochs * len(self.train_dataloader) - 1
         # self.logger.save_metrics(SetType.validation.name + '_eval', 'bleu_inference', valid_metric, step=last_step)
         # self.logger.save_metrics(SetType.train.name + '_eval', 'bleu_inference', train_eval_metric, step=last_step)
-        self.save(self.config.checkpoint_name % last_step)
+        self.save('last_checkpoint')
 
     @torch.no_grad()
     def evaluate(self, dataloader: DataLoader, inference: bool = False):

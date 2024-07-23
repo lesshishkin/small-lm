@@ -46,7 +46,7 @@ experiment_cfg.neptune.dependencies_path = os.path.join(ROOT_DIR, 'requirements.
 # Checkpoints parameters
 experiment_cfg.checkpoints_dir = os.path.join(ROOT_DIR, 'experiments', experiment_cfg.neptune.experiment_name,
                                               'checkpoints')
-experiment_cfg.checkpoint_save_frequency = 3_000
+experiment_cfg.checkpoint_save_frequency = 10_000
 experiment_cfg.checkpoint_name = 'checkpoint_%s'
 experiment_cfg.best_checkpoint_name = 'best_checkpoint'
 
