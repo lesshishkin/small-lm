@@ -54,12 +54,12 @@ class Trainer:
         self.train_dataset = dataset(data_cfg, SetType.train)
         self.train_dataloader = DataLoader(
             self.train_dataset,
-            batch_sampler=RandomSortingSampler(self.train_dataset, batch_size=batch_size, shuffle=False),
+            batch_sampler=RandomSortingSampler(self.train_dataset, batch_size=batch_size, shuffle=True),
             collate_fn=collate_function
         )
 
         # предварительные действия:
-        # 1. узнать какая длина создает проблему с памятью
+        # 1. узнать какая длина создает проблему с памятью  done 720 при 12 слоях
         # 2. узнать сколько за раз сможет обработать кагл
         # 3. сортируем датасет по длине
         # 4. удалим элементы датасета с длиной больше пороговой
