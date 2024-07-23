@@ -54,7 +54,7 @@ class Trainer:
         self.train_dataset = dataset(data_cfg, SetType.train)
         self.train_dataloader = DataLoader(
             self.train_dataset,
-            batch_sampler=RandomSortingSampler(self.train_dataset, batch_size=batch_size, shuffle=True),
+            batch_sampler=RandomSortingSampler(self.train_dataset, batch_size=batch_size, shuffle=False),
             collate_fn=collate_function
         )
 
