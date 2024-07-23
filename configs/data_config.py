@@ -6,7 +6,8 @@ import os
 data_cfg = EasyDict()
 data_cfg.name = 'TinyStoriesDataset'
 data_cfg.path_to_data = '/kaggle/input/tinystories'
-data_cfg.tokenized_train_data_path = os.path.join(data_cfg.path_to_data, 'train_v2_en_tokenized_part_1.pickle')
+data_cfg.tokenized_train_data_path = os.path.join(data_cfg.path_to_data, 'random_data.pickle')
+# data_cfg.tokenized_train_data_path = os.path.join(data_cfg.path_to_data, 'train_v2_en_tokenized_part_1.pickle')
 # data_cfg.tokenized_train_data_path = os.path.join(data_cfg.path_to_data, 'train_v2_en_tokenized_part_2.pickle')
 # data_cfg.tokenized_train_data_path = os.path.join(data_cfg.path_to_data, 'train_v2_en_tokenized_part_3.pickle')
 # data_cfg.tokenized_train_data_path = os.path.join(data_cfg.path_to_data, 'train_v2_en_tokenized_part_4.pickle')
