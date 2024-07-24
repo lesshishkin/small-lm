@@ -111,7 +111,7 @@ class Trainer:
 
     def load(self, filepath: str):
         """Loads trained model."""
-        checkpoint = torch.load(os.path.join(self.config.checkpoints_dir, filepath), map_location=self.device)
+        checkpoint = torch.load(filepath, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
