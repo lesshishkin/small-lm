@@ -1,14 +1,8 @@
-import os
-import random
-import sys
-import numpy as np
-import evaluate
-
 import torch
 from models.tinyllm import TinyLLM
 from utils.common_functions import set_seed
-from utils.data_utils import get_sequence_mask, collate_function
-from utils.enums import SetType, InferenceType
+from utils.data_utils import get_sequence_mask
+from utils.enums import InferenceType
 from torch.nn.functional import softmax
 
 import youtokentome as yttm
