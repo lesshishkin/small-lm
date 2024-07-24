@@ -303,26 +303,6 @@ class Trainer:
         self.model.train()
         return total_loss, results['bleu']
 
-    @torch.no_grad()
-    def predict(self, model_path: str, dataloader: DataLoader, inference_config):
-        """Gets model predictions for a given dataloader."""
-        # TODO переделать предикт
-        self.load(model_path)
-        self.model.eval()
-
-        target_lang_preprocessor = self.train_dataset.preprocessors[self.config.data.target_lang]
-        all_predictions, all_sample_ids = [], []
-
-        for sample in dataloader:
-            sample_id, encoder_inputs, _, _, _, _ = sample
-            encoder_inputs = encoder_inputs.to(self.device)
-            prediction = self.inference(encoder_inputs, inference_config)
-
-            all_predictions.extend(target_lang_preprocessor.decode(prediction, batch=True))
-            all_sample_ids.extend(sample_id.view(-1).cpu().tolist())
-
-        return all_predictions, all_sample_ids
-
     def batch_overfit(self):
         """One batch overfitting.
 
