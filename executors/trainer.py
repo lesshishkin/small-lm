@@ -331,8 +331,8 @@ class Trainer:
         # TODO переделать инференс
         self.model.eval()
         batch_size = sequence.size(0)
-        sos_token_id = self.config.data.preprocessing.special_tokens.index("[SOS]")
-        eos_token_id = self.config.data.preprocessing.special_tokens.index("[EOS]")
+        sos_token_id = self.config.data.special_tokens.index("<BOS>")
+        eos_token_id = self.config.data.special_tokens.index("<EOS>")
         inference_step = 0
         decoded_sequence = torch.ones((batch_size, 1), dtype=torch.int32, device=self.device) * sos_token_id
         finished_sequences = torch.zeros(batch_size, dtype=torch.bool, device=self.device)
