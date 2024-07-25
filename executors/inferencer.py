@@ -56,8 +56,6 @@ class Inferencer:
         #   добавляем предсказанный токен к списку для входа в модель
         # принт очередного токена
         # декодируем последовательность и возвращаем
-        batch_size = sequence.size(0)
-        sos_token_id = self.config.data.special_tokens.index("<ВOS>")
         eos_token_id = self.config.data.special_tokens.index("<EOS>")
         inference_step = 0
         start_pos = 0
@@ -84,7 +82,7 @@ class Inferencer:
             inference_step += 1
 
             token_to_print = self.tokenizer.id_to_subword(current_token.squeeze())
-            token_to_print = token_to_print.replace('▁', ' ')
+            token_to_print = token_to_print.replace(self.config.data.start_of_word, ' ')
             print(token_to_print, end="")
 
         print()
