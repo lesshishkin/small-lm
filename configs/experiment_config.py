@@ -52,7 +52,8 @@ experiment_cfg.best_checkpoint_name = 'best_checkpoint'
 
 # Inference parameters
 experiment_cfg.inference = EasyDict()
-experiment_cfg.inference.type = InferenceType.temperature
+# experiment_cfg.inference.type = InferenceType.temperature
+experiment_cfg.inference.type = InferenceType.greedy
 experiment_cfg.inference.temperature_value = 1
 experiment_cfg.inference.eps = 1e-9
 experiment_cfg.inference.stop_predict = 300  # Maximum number of inference steps (i.e. generated sequence length)

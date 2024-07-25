@@ -58,8 +58,9 @@ class Inferencer:
         # пока по одному:
         tokenized_seq = torch.tensor(self.tokenizer.encode(sentence, bos=True)).unsqueeze(0)
         predictions = self.inference(tokenized_seq, inference_config=self.config.inference)
+        decoded_predictions = self.tokenizer.decode(predictions)
 
-        return predictions
+        return decoded_predictions
 
     @torch.no_grad()
     def inference(self, sequence: torch.Tensor, inference_config):
@@ -81,12 +82,10 @@ class Inferencer:
         eos_token_id = self.config.data.special_tokens.index("<EOS>")
         inference_step = 0
         start_pos = 0
-        decoded_sequence = torch.ones((batch_size, 1), dtype=torch.int32, device=self.device) * sos_token_id
-        finished_sequences = torch.zeros(batch_size, dtype=torch.bool, device=self.device)
+        finished = False
 
-        mask = get_sequence_mask(sequence, mask_future_positions=True, device=self.device)
-
-        while not finished_sequences.all() and inference_step < inference_config.stop_predict:
+        while not finished and inference_step < inference_config.stop_predict:
+            mask = get_sequence_mask(sequence, mask_future_positions=True, device=self.device)
             output = self.model(sequence, start_pos, mask)
 
             if inference_config.type == InferenceType.greedy.value:
@@ -98,11 +97,16 @@ class Inferencer:
             else:
                 raise Exception('Unknown inference type!')
 
-            decoded_sequence = torch.hstack([decoded_sequence, current_token])
-            finished_sequences |= current_token.squeeze() == eos_token_id
+            sequence = torch.hstack([sequence, current_token])
+
+            if current_token.squeeze() == eos_token_id:
+                finished = True
+
             inference_step += 1
 
-        eos_subsequence_mask = torch.cummax(decoded_sequence == eos_token_id, dim=1).values
-        decoded_sequence = decoded_sequence.masked_fill(eos_subsequence_mask, eos_token_id)
+            token_to_print = self.tokenizer.id_to_subword(current_token.squeeze())
+            print(token_to_print, end="")
 
-        return decoded_sequence.cpu().tolist()
+        print()
+
+        return sequence.cpu().tolist()
