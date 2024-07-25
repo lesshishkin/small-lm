@@ -13,7 +13,7 @@ class Inferencer:
 
     def __init__(self, config, init_logger=True):
         self.config = config
-        set_seed(self.config.seed)
+        # set_seed(self.config.seed)
         self.tokenizer = yttm.BPE(model=self.config.data.tokenizer_path, n_threads=-1)
         self._prepare_model()
         print('Model ready')
@@ -33,30 +33,9 @@ class Inferencer:
         checkpoint = torch.load(filepath, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
 
-    # @torch.no_grad()
-    # def predict(self, model_path: str, dataloader: DataLoader, inference_config):
-    #     """Gets model predictions for a given dataloader."""
-    #     # TODO переделать предикт
-    #     self.load(model_path)
-    #     self.model.eval()
-    #
-    #     target_lang_preprocessor = self.train_dataset.preprocessors[self.config.data.target_lang]
-    #     all_predictions, all_sample_ids = [], []
-    #
-    #     for sample in dataloader:
-    #         sample_id, encoder_inputs, _, _, _, _ = sample
-    #         encoder_inputs = encoder_inputs.to(self.device)
-    #         prediction = self.inference(encoder_inputs, inference_config)
-    #
-    #         all_predictions.extend(target_lang_preprocessor.decode(prediction, batch=True))
-    #         all_sample_ids.extend(sample_id.view(-1).cpu().tolist())
-    #
-    #     return all_predictions, all_sample_ids
-
     @torch.no_grad()
     def predict(self, sentence):
-        # пока по одному:
-        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence, bos=True)).unsqueeze(0)
+        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence)).unsqueeze(0)
         predictions = self.inference(tokenized_seq, inference_config=self.config.inference)
         decoded_predictions = self.tokenizer.decode(predictions)
 
@@ -105,7 +84,7 @@ class Inferencer:
             inference_step += 1
 
             token_to_print = self.tokenizer.id_to_subword(current_token.squeeze())
-            token_to_print.replace('▁', ' ')
+            token_to_print = token_to_print.replace('▁', ' ')
             print(token_to_print, end="")
 
         print()
