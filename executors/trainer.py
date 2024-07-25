@@ -54,7 +54,7 @@ class Trainer:
         self.train_dataset = dataset(data_cfg, SetType.train)
         self.train_dataloader = DataLoader(
             self.train_dataset,
-            batch_sampler=RandomSortingSampler(self.train_dataset, batch_size=batch_size, shuffle=False),
+            batch_sampler=RandomSortingSampler(self.train_dataset, batch_size=batch_size, shuffle=True),
             collate_fn=collate_function
         )
 
@@ -195,7 +195,6 @@ class Trainer:
         pad_idx = self.config.data.special_tokens.index("<PAD>")
 
         for step, batch in enumerate(self.train_dataloader):
-            print(step)     # delete
             loss, output, decoder_outputs = self.make_step(batch, update_model=True)
             train_losses.append(loss)
             prediction_with_pad = output.argmax(axis=-1)
