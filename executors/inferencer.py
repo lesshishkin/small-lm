@@ -78,7 +78,7 @@ class Inferencer:
         # принт очередного токена
         # декодируем последовательность и возвращаем
         batch_size = sequence.size(0)
-        sos_token_id = self.config.data.special_tokens.index("<BOS>")
+        sos_token_id = self.config.data.special_tokens.index("<ВOS>")
         eos_token_id = self.config.data.special_tokens.index("<EOS>")
         inference_step = 0
         start_pos = 0
