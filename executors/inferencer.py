@@ -89,11 +89,11 @@ class Inferencer:
             output = self.model(sequence, start_pos, mask)
 
             if inference_config.type == InferenceType.greedy.value:
-                current_token = torch.argmax(output, dim=-1)[:, inference_step].view(-1, 1) + 1
+                current_token = torch.argmax(output, dim=-1)[:, inference_step].view(-1, 1)
             elif inference_config.type == InferenceType.temperature.value:
                 output = output / (inference_config.temperature_value + inference_config.eps)
                 probabilities = softmax(output, dim=-1)
-                current_token = probabilities[:, inference_step, :].multinomial(num_samples=1) + 1
+                current_token = probabilities[:, inference_step, :].multinomial(num_samples=1)
             else:
                 raise Exception('Unknown inference type!')
 
@@ -105,6 +105,7 @@ class Inferencer:
             inference_step += 1
 
             token_to_print = self.tokenizer.id_to_subword(current_token.squeeze())
+            token_to_print.replace('▁', ' ')
             print(token_to_print, end="")
 
         print()
