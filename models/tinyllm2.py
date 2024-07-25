@@ -22,11 +22,10 @@ class TransformerBlock2(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        start_pos: int,
         freqs_cis: torch.Tensor,
         mask,
     ):
-        h = x + self.attention_dropout(self.attention(self.attention_norm(x), start_pos, freqs_cis, mask))
+        h = x + self.attention_dropout(self.attention(self.attention_norm(x), freqs_cis, mask))
         out = h + self.ff_dropout(self.feed_forward(self.ffn_norm(h)))
 
         return out
@@ -73,7 +72,7 @@ class TinyLLM2(nn.Module):
         freqs_cis = self.freqs_cis[start_pos : start_pos + seqlen]
 
         for layer in self.layers:
-            h = layer(h, start_pos, freqs_cis, mask)
+            h = layer(h, freqs_cis, mask)
         h = self.norm(h)
 
         output = self.output(h)
