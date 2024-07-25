@@ -55,51 +55,40 @@ class Inferencer:
 
     @torch.no_grad()
     def predict(self, sentence):
-        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence))
+        # пока по одному:
+        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence, bos=True)).unsqueeze(0)
         predictions = self.inference(tokenized_seq, inference_config=self.config.inference)
 
-
-    def inference_step(self, encoded_input: torch.Tensor, decoded_sequence: torch.Tensor, source_mask: torch.Tensor):
-        """Gets model decoder output given encoder output and sequence made by decoder at current step.
-
-        Args:
-            encoded_input: source sequences passed through the model encoder (batch size, source sequence length, d_model)
-            decoded_sequence: sequences with all tokens generated up to the current inference step (batch size, generated sequence length)
-            source_mask: a sequence mask with ones at positions that should be masked out (for encoder outputs)
-
-        Returns:
-            Model output generated wrt the already generated sequence (decoded_sequence)
-        """
-        # TODO переделать это тоже
-        target_mask = get_sequence_mask(decoded_sequence, mask_future_positions=True, device=self.device)
-
-        with torch.no_grad():
-            decoder_inputs_embeddings = self.model.positional_encoding(self.model.embeddings_decoder(decoded_sequence))
-            decoder_output, decoder_self_attention_weights, decoder_encoder_attention_weights = self.model.decoder(
-                decoder_inputs_embeddings, encoded_input, source_mask, target_mask)
-            output = self.model.output(decoder_output)
-
-        return output, decoder_self_attention_weights, decoder_encoder_attention_weights
+        return predictions
 
     @torch.no_grad()
-    def inference(self, sequence: torch.Tensor, inference_config, return_attention=False):
+    def inference(self, sequence: torch.Tensor, inference_config):
         """Makes inference with auto-regressive decoding for the given sequence."""
         # TODO переделать инференс
         self.model.eval()
+        # пока будем инференсить по одному
+        # инициализируем список результатов
+        # делаем цикл, пока не получим еос токен либо пока не достигнем максимума итераций:
+        #   даем на вход модели последовательность токенов
+        #   получаем предсказания
+        #   берем аргмакс или применяем другой тип инференса от последнего токена
+        #   добавляем предсказанный токен к списку предсказанных токенов
+        #   добавляем предсказанный токен к списку для входа в модель
+        # принт очередного токена
+        # декодируем последовательность и возвращаем
         batch_size = sequence.size(0)
         sos_token_id = self.config.data.special_tokens.index("<BOS>")
         eos_token_id = self.config.data.special_tokens.index("<EOS>")
         inference_step = 0
+        start_pos = 0
         decoded_sequence = torch.ones((batch_size, 1), dtype=torch.int32, device=self.device) * sos_token_id
         finished_sequences = torch.zeros(batch_size, dtype=torch.bool, device=self.device)
 
-        input_mask = get_sequence_mask(sequence, device=self.device)
-        encoder_inputs_embeddings = self.model.positional_encoding(self.model.embeddings_encoder(sequence))
-        encoded_input, encoder_attention_weights = self.model.encoder(encoder_inputs_embeddings, input_mask)
+        mask = get_sequence_mask(sequence, mask_future_positions=True, device=self.device)
 
         while not finished_sequences.all() and inference_step < inference_config.stop_predict:
-            output, decoder_self_attention_weights, decoder_encoder_attention_weights = self.inference_step(
-                encoded_input, decoded_sequence, input_mask)
+            output = self.model(sequence, start_pos, mask)
+
             if inference_config.type == InferenceType.greedy.value:
                 current_token = torch.argmax(output, dim=-1)[:, inference_step].view(-1, 1) + 1
             elif inference_config.type == InferenceType.temperature.value:
@@ -115,7 +104,5 @@ class Inferencer:
 
         eos_subsequence_mask = torch.cummax(decoded_sequence == eos_token_id, dim=1).values
         decoded_sequence = decoded_sequence.masked_fill(eos_subsequence_mask, eos_token_id)
-        if return_attention:
-            return decoded_sequence.cpu().tolist(), encoder_attention_weights, decoder_self_attention_weights, decoder_encoder_attention_weights
-        else:
-            return decoded_sequence.cpu().tolist()
+
+        return decoded_sequence.cpu().tolist()
