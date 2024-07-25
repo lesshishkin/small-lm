@@ -2,7 +2,6 @@ import os
 import random
 import sys
 import numpy as np
-import evaluate
 
 import torch
 from torch import nn
@@ -14,12 +13,10 @@ from dataset.russian_stories_dataset import TinyStoriesDataset
 from executors.sampler import RandomSortingSampler
 from models.tinyllm2 import TinyLLM2
 from utils.common_functions import set_seed
-from utils.data_utils import get_sequence_mask, collate_function
-from utils.enums import SetType, InferenceType
+from utils.data_utils import collate_function
+from utils.enums import SetType
 from utils.logger import NeptuneLogger
 from transformers import get_cosine_schedule_with_warmup
-# from utils.training_utils import custom_lr_schedule
-from torch.nn.functional import softmax
 
 import youtokentome as yttm
 
