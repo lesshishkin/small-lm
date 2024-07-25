@@ -10,7 +10,7 @@ def run_inference():
     inferencer = Inferencer(experiment_cfg)
     print('Prompt:')
     sentence = input()
-    # todo доделать
+    inferencer.predict(sentence)
 
 
 if __name__ == '__main__':

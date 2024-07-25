@@ -57,6 +57,6 @@ experiment_cfg.inference.type = InferenceType.greedy
 experiment_cfg.inference.temperature_value = 1
 experiment_cfg.inference.eps = 1e-9
 experiment_cfg.inference.stop_predict = 300  # Maximum number of inference steps (i.e. generated sequence length)
-experiment_cfg.inference.model_path = os.path.join(experiment_cfg.checkpoints_dir, 'production_checkpoint')
+experiment_cfg.inference.model_path = os.path.join(experiment_cfg.checkpoints_dir, 'last_checkpoint_2')
 experiment_cfg.model = model_cfg
 experiment_cfg.data = data_cfg
