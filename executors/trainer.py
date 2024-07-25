@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 
 from dataset.russian_stories_dataset import TinyStoriesDataset
 from executors.sampler import RandomSortingSampler
-from models.tinyllm import TinyLLM
+from models.tinyllm2 import TinyLLM2
 from utils.common_functions import set_seed
 from utils.data_utils import get_sequence_mask, collate_function
 from utils.enums import SetType, InferenceType
@@ -77,9 +77,9 @@ class Trainer:
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.model = TinyLLM(self.config.model,
-                             vocab_size=self.tokenizer.vocab_size(),
-                             device=self.device).to(self.device)
+        self.model = TinyLLM2(self.config.model,
+                              vocab_size=self.tokenizer.vocab_size(),
+                              device=self.device).to(self.device)
 
         self.optimizer = getattr(optim, self.config.train.optimizer)(
             self.model.parameters(), lr=self.config.train.learning_rate,
@@ -141,7 +141,7 @@ class Trainer:
         decoder_outputs = decoder_outputs.to(self.device)
         decoder_mask = decoder_mask.to(self.device)
 
-        start_pos = 0   # вдруг пригодится
+        start_pos = 0  # вдруг пригодится
         outputs = self.model(decoder_inputs, start_pos, decoder_mask)
         loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), decoder_outputs.reshape(-1))
 
