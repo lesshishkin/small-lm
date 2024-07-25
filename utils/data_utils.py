@@ -37,17 +37,17 @@ def collate_function(batch):
     Returns:
         Tuple containing collated batch data and masks.
     """
-    decoder_inputs, decoder_outputs, sample_indices = [], [], []
+    inputs, targets, idx = [], [], []
 
     for data_dict in batch:
-        decoder_inputs.append(torch.tensor(data_dict['tokens'][:-1]))
-        decoder_outputs.append(torch.tensor(data_dict['tokens'][1:]))
-        sample_indices.append(torch.tensor(data_dict['id'], dtype=torch.int))
+        inputs.append(torch.tensor(data_dict['tokens'][1:-1]))
+        targets.append(torch.tensor(data_dict['tokens'][2:]))
+        idx.append(torch.tensor(data_dict['id'], dtype=torch.int))
 
-    decoder_inputs = pad_sequence(decoder_inputs, batch_first=True)
-    decoder_outputs = pad_sequence(decoder_outputs, batch_first=True)
-    sample_indices = torch.vstack(sample_indices)
+    inputs = pad_sequence(inputs, batch_first=True)
+    targets = pad_sequence(targets, batch_first=True)
+    idx = torch.vstack(idx)
 
-    decoder_mask = get_sequence_mask(decoder_inputs, mask_future_positions=True)
+    decoder_mask = get_sequence_mask(inputs, mask_future_positions=True)
 
-    return sample_indices, decoder_inputs, decoder_outputs, decoder_mask
+    return idx, inputs, targets, decoder_mask
