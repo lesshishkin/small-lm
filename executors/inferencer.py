@@ -4,7 +4,6 @@ from utils.common_functions import set_seed
 from utils.data_utils import get_sequence_mask
 from utils.enums import InferenceType
 from torch.nn.functional import softmax
-
 import youtokentome as yttm
 
 
@@ -34,7 +33,7 @@ class Inferencer:
         checkpoint = torch.load(filepath, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
 
-    @torch.no_grad()
+    # @torch.no_grad()
     # def predict(self, model_path: str, dataloader: DataLoader, inference_config):
     #     """Gets model predictions for a given dataloader."""
     #     # TODO переделать предикт
@@ -53,6 +52,12 @@ class Inferencer:
     #         all_sample_ids.extend(sample_id.view(-1).cpu().tolist())
     #
     #     return all_predictions, all_sample_ids
+
+    @torch.no_grad()
+    def predict(self, sentence):
+        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence))
+        predictions = self.inference(tokenized_seq, inference_config=self.config.inference)
+
 
     def inference_step(self, encoded_input: torch.Tensor, decoded_sequence: torch.Tensor, source_mask: torch.Tensor):
         """Gets model decoder output given encoder output and sequence made by decoder at current step.
