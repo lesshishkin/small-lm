@@ -35,7 +35,7 @@ class Inferencer:
 
     @torch.no_grad()
     def predict(self, sentence):
-        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence)).unsqueeze(0)
+        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence)).unsqueeze(0).to(self.device)
         predictions = self.inference(tokenized_seq, inference_config=self.config.inference)
         decoded_predictions = self.tokenizer.decode(predictions)
 
