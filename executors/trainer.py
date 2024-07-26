@@ -167,7 +167,6 @@ class Trainer:
         predictions = predictions[-self.config.train.log_window:]
         decoder_outputs = decoder_outputs[-self.config.train.log_window:]
 
-        # todo разобраться какие индексы игнорировать
         train_targets_decoded = self.tokenizer.decode(decoder_outputs)
         train_predictions_decoded = self.tokenizer.decode(predictions)
         perplexity = np.exp(np.mean(losses))
@@ -176,6 +175,9 @@ class Trainer:
         output_to_show = f"Target:     {train_targets_decoded[random_sample_num]}\n" \
                          f"Prediction: {train_predictions_decoded[random_sample_num]}\n" \
                          f"Perplexity: {perplexity}\n"
+
+        # delete
+        print(output_to_show)
 
         return np.mean(losses), perplexity, output_to_show
 
@@ -216,7 +218,7 @@ class Trainer:
 
                 self.logger.save_metrics(SetType.train.name, 'loss', train_loss, step=steps_done + step)
                 self.logger.save_metrics(SetType.train.name, 'perplexity', train_metric, step=steps_done + step)
-                # self.logger.save_metrics(SetType.train.name, 'generated_text', output_to_show, step=steps_done + step)
+                self.logger.save_metrics(SetType.train.name, 'generated_text', output_to_show, step=steps_done + step)
                 train_losses, train_predictions, train_decoder_outputs = [], [], []
 
             if step % self.config.checkpoint_save_frequency == 0 and step != 0:
