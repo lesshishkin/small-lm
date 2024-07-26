@@ -16,5 +16,10 @@ def train_previous():
     trainer.fit()
 
 
+def train_new():
+    trainer = Trainer(experiment_cfg)
+    trainer.fit()
+
+
 if __name__ == '__main__':
-    train_previous()
+    train_new()
