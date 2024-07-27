@@ -32,7 +32,7 @@ class TransformerBlock2(nn.Module):
 
 
 class TinyLLM2(nn.Module):
-    """TinyLLM -- tiny but large. Like LLaMA3"""
+    """TinyLLM2 -- my second try"""
     def __init__(self, config, vocab_size, device):
         super(TinyLLM2, self).__init__()
 
