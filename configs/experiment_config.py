@@ -25,8 +25,8 @@ experiment_cfg.train.optimizer_params = {
 }
 experiment_cfg.train.continue_train = False
 experiment_cfg.train.checkpoint_from_epoch = None
-experiment_cfg.train.log_frequency = 10
-experiment_cfg.train.log_window = 10
+experiment_cfg.train.log_frequency = 100
+experiment_cfg.train.log_window = 50
 experiment_cfg.train.validation_frequency = 5000
 experiment_cfg.train.validation_batch_size = 16
 experiment_cfg.train.inference_frequency = 2
