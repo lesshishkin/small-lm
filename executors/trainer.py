@@ -176,9 +176,6 @@ class Trainer:
                          f"Prediction: {train_predictions_decoded[random_sample_num]}\n" \
                          f"Perplexity: {perplexity}\n"
 
-        # delete
-        print(output_to_show)
-
         return np.mean(losses), perplexity, output_to_show
 
     def train_epoch(self, epoch: int, best_metric: float):
