@@ -73,8 +73,7 @@ class TinyLLM2(nn.Module):
 
         for layer in self.layers:
             h = layer(h, freqs_cis, mask)
+
         h = self.norm(h)
 
-        output = self.output(h)
-
-        return output
+        return self.output(h)
