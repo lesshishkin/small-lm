@@ -218,8 +218,12 @@ class Trainer:
 
                 self.logger.save_metrics(SetType.train.name, 'loss', train_loss, step=steps_done + step)
                 self.logger.save_metrics(SetType.train.name, 'perplexity', train_metric, step=steps_done + step)
-                self.logger.save_metrics(SetType.train.name, 'generated_text', output_to_show, step=steps_done + step)
+                # self.logger.save_metrics(SetType.train.name, 'generated_text', output_to_show, step=steps_done + step)
                 train_losses, train_predictions, train_decoder_outputs = [], [], []
+
+                if step % self.config.train.log_output_frequency == 0 and step != 0:
+                    print(step)
+                    print(output_to_show)
 
             if step % self.config.checkpoint_save_frequency == 0 and step != 0:
                 self.save(self.config.checkpoint_name % (steps_done + step))
