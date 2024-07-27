@@ -22,4 +22,5 @@ def train_new():
 
 
 if __name__ == '__main__':
-    train_new()
+    trainer = Trainer(experiment_cfg)
+    trainer.batch_overfit()
