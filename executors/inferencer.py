@@ -1,4 +1,5 @@
 import torch
+from models.tinyllm2 import TinyLLM2
 from models.tinyllm import TinyLLM
 from utils.common_functions import set_seed
 from utils.data_utils import get_sequence_mask
@@ -35,7 +36,7 @@ class Inferencer:
 
     @torch.no_grad()
     def predict(self, sentence):
-        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence)).unsqueeze(0).to(self.device)
+        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence, bos=True)).unsqueeze(0).to(self.device)
         predictions = self.inference(tokenized_seq, inference_config=self.config.inference)
         decoded_predictions = self.tokenizer.decode(predictions)
 
@@ -66,7 +67,7 @@ class Inferencer:
             output = self.model(sequence, start_pos, mask)
 
             if inference_config.type == InferenceType.greedy.value:
-                current_token = torch.argmax(output, dim=-1)[:, inference_step].view(-1, 1)
+                current_token = torch.argmax(output, dim=-1)[:, -1].view(-1, 1)
             elif inference_config.type == InferenceType.temperature.value:
                 output = output / (inference_config.temperature_value + inference_config.eps)
                 probabilities = softmax(output, dim=-1)
