@@ -22,5 +22,6 @@ def train_new():
 
 
 if __name__ == '__main__':
-    trainer = Trainer(experiment_cfg)
-    trainer.batch_overfit()
+    # trainer = Trainer(experiment_cfg)
+    # trainer.batch_overfit()
+    run_inference()
