@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from dataset.russian_stories_dataset import TinyStoriesDataset
 from executors.sampler import RandomSortingSampler
 from models.tinyllm2 import TinyLLM2
+from models.tinyllm import TinyLLM
 from utils.common_functions import set_seed
 from utils.data_utils import collate_function
 from utils.enums import SetType
@@ -74,7 +75,7 @@ class Trainer:
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.model = TinyLLM2(self.config.model,
+        self.model = TinyLLM(self.config.model,
                               vocab_size=self.tokenizer.vocab_size(),
                               device=self.device).to(self.device)
 
