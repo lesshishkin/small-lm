@@ -71,7 +71,7 @@ class Inferencer:
             elif inference_config.type == InferenceType.temperature.value:
                 output = output / (inference_config.temperature_value + inference_config.eps)
                 probabilities = softmax(output, dim=-1)
-                current_token = probabilities[:, inference_step, :].multinomial(num_samples=1)
+                current_token = probabilities[:, -1, :].multinomial(num_samples=1)
             else:
                 raise Exception('Unknown inference type!')
 
