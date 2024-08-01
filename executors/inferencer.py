@@ -1,7 +1,6 @@
 import torch
 from models.tinyllm2 import TinyLLM2
 from models.tinyllm import TinyLLM
-from utils.common_functions import set_seed
 from utils.data_utils import get_sequence_mask
 from utils.enums import InferenceType
 from torch.nn.functional import softmax
@@ -10,11 +9,9 @@ import youtokentome as yttm
 
 class Inferencer:
     """A class for model inferencing."""
-    # TODO Доделать
 
     def __init__(self, config, init_logger=True):
         self.config = config
-        # set_seed(self.config.seed)
         self.tokenizer = yttm.BPE(model=self.config.data.tokenizer_path, n_threads=-1)
         self._prepare_model()
         print('Model ready')
@@ -45,7 +42,6 @@ class Inferencer:
     @torch.no_grad()
     def inference(self, sequence: torch.Tensor, inference_config):
         """Makes inference with auto-regressive decoding for the given sequence."""
-        # TODO переделать инференс
         self.model.eval()
         # пока будем инференсить по одному
         # инициализируем список результатов
