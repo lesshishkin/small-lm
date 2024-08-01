@@ -75,9 +75,10 @@ class Trainer:
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.model = TinyLLM(self.config.model,
-                              vocab_size=self.tokenizer.vocab_size(),
-                              device=self.device).to(self.device)
+        model_class = getattr(sys.modules[__name__], self.config.model.name)
+        self.model = model_class(self.config.model,
+                                 vocab_size=self.tokenizer.vocab_size(),
+                                 device=self.device).to(self.device)
 
         self.optimizer = getattr(optim, self.config.train.optimizer)(
             self.model.parameters(), lr=self.config.train.learning_rate,
