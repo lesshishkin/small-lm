@@ -33,6 +33,8 @@ class Inferencer:
 
     @torch.no_grad()
     def predict(self, sentence):
+        # eng модель училась с bos токеном,
+        # ru училась без bos
         tokenized_seq = torch.tensor(self.tokenizer.encode(sentence, bos=True)).unsqueeze(0).to(self.device)
         predictions = self.inference(tokenized_seq, inference_config=self.config.inference)
         decoded_predictions = self.tokenizer.decode(predictions)
