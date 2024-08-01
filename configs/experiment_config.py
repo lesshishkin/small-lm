@@ -30,7 +30,7 @@ experiment_cfg.train.log_window = 50
 experiment_cfg.train.validation_frequency = 5000
 experiment_cfg.train.validation_batch_size = 16
 experiment_cfg.train.inference_frequency = 2
-experiment_cfg.train.log_output_frequency = 1000
+experiment_cfg.train.log_output_frequency = 500
 
 # Overfit parameters
 experiment_cfg.overfit = EasyDict()
