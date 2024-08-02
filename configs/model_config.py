@@ -7,15 +7,15 @@ model_cfg.d_ff = 2048
 model_cfg.max_seq_len = 2048   # for RoPE
 
 # en model
-# model_cfg.name = 'TinyLLM'
-# model_cfg.n_heads = 8
-# model_cfg.n_kv_heads = 4       # GMQA
-# model_cfg.n_layers = 12
+model_cfg.name = 'TinyLLM'
+model_cfg.n_heads = 8
+model_cfg.n_kv_heads = 4       # GMQA
+model_cfg.n_layers = 12
 
 # ru model
-model_cfg.n_heads = 16
-model_cfg.n_layers = 7
-model_cfg.name = 'TinyLLM2'
+# model_cfg.n_heads = 16
+# model_cfg.n_layers = 7
+# model_cfg.name = 'TinyLLM2'
 
 model_cfg.eps = 1e-6
 model_cfg.dropout_rate = 0.1

@@ -12,4 +12,4 @@ data_cfg.tokenized_valid_data_path = os.path.join(data_cfg.path_to_data, 'valid_
 data_cfg.vocabulary_size = 25_000
 data_cfg.special_tokens = ["<PAD>", "<UNK>", "<ВOS>", "<EOS>"]
 data_cfg.start_of_word = '▁'
-data_cfg.tokenizer_path = os.path.join(data_cfg.path_to_data, 'ru_tinystories_tokenizer.model')
+data_cfg.tokenizer_path = os.path.join(data_cfg.path_to_data, 'en_tokenizer.model')
