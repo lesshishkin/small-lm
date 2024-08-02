@@ -15,7 +15,7 @@ model_cfg.max_seq_len = 2048   # for RoPE
 # en model v2
 model_cfg.name = 'TinyLLM'
 model_cfg.n_heads = 16
-model_cfg.n_kv_heads = 16       # GMQA
+model_cfg.n_kv_heads = 8       # GMQA
 model_cfg.n_layers = 12
 
 # ru model
