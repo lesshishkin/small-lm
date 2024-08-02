@@ -11,7 +11,8 @@ ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 experiment_cfg = EasyDict()
 experiment_cfg.seed = 0
 experiment_cfg.num_epochs = 1
-experiment_cfg.num_steps = 170_000
+experiment_cfg.num_steps = 340_000
+# experiment_cfg.num_steps = 170_000
 
 # Train parameters
 experiment_cfg.train = EasyDict()
