@@ -5,6 +5,7 @@ from utils.data_utils import get_sequence_mask
 from utils.enums import InferenceType
 from torch.nn.functional import softmax
 import youtokentome as yttm
+import sys
 
 
 class Inferencer:
@@ -20,7 +21,8 @@ class Inferencer:
         """Preparing model, optimizer and loss function."""
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.model = TinyLLM(self.config.model,
+        model_class = getattr(sys.modules[__name__], self.config.model.name)
+        self.model = model_class(self.config.model,
                              vocab_size=self.tokenizer.vocab_size(),
                              device=self.device).to(self.device)
 
@@ -35,7 +37,7 @@ class Inferencer:
     def predict(self, sentence):
         # eng модель училась с bos токеном,
         # ru училась без bos
-        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence, bos=True)).unsqueeze(0).to(self.device)
+        tokenized_seq = torch.tensor(self.tokenizer.encode(sentence)).unsqueeze(0).to(self.device)
         predictions = self.inference(tokenized_seq, inference_config=self.config.inference)
         decoded_predictions = self.tokenizer.decode(predictions)
 
