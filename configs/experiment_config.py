@@ -21,7 +21,7 @@ experiment_cfg.train.warmup_steps = 500
 experiment_cfg.train.label_smoothing = 0.0
 experiment_cfg.train.optimizer = 'AdamW'  # from (Adam, AdamW)
 experiment_cfg.train.optimizer_params = {
-    'Adam': {'betas': (0.9, 0.999), 'eps': 1e-8}, 'AdamW': {'betas': (0.9, 0.98), 'eps': 1e-9, 'weight_decay': 1e-4}
+    'Adam': {'betas': (0.9, 0.999), 'eps': 1e-8}, 'AdamW': {'betas': (0.9, 0.98), 'eps': 1e-9, 'weight_decay': 1e-3}
 }
 experiment_cfg.train.continue_train = False
 experiment_cfg.train.checkpoint_from_epoch = None

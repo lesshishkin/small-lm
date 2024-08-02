@@ -6,10 +6,16 @@ model_cfg.dim = 512
 model_cfg.d_ff = 2048
 model_cfg.max_seq_len = 2048   # for RoPE
 
-# en model
+# # en model
+# model_cfg.name = 'TinyLLM'
+# model_cfg.n_heads = 8
+# model_cfg.n_kv_heads = 4       # GMQA
+# model_cfg.n_layers = 12
+
+# en model v2
 model_cfg.name = 'TinyLLM'
-model_cfg.n_heads = 8
-model_cfg.n_kv_heads = 4       # GMQA
+model_cfg.n_heads = 16
+model_cfg.n_kv_heads = 16       # GMQA
 model_cfg.n_layers = 12
 
 # ru model
