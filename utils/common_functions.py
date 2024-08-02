@@ -47,7 +47,7 @@ def read_file(path):
             print('Unknown extension')
             return None
     except FileNotFoundError:
-        print('File not found')
+        print('File not found: ', path)
         return None
     return file
 
