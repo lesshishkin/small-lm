@@ -1,6 +1,7 @@
 from executors.trainer import Trainer
 from executors.inferencer import Inferencer
 from configs.experiment_config import experiment_cfg
+from data.tinystories.validation_prompts import prompts
 
 
 def run_inference(prompt=None):
@@ -27,9 +28,16 @@ def sft_finetuning():
     trainer.fit()
 
 
+def inference_valid_prompts(checkpoint_name):
+    inferencer = Inferencer(experiment_cfg)
+    with open(f'results_{checkpoint_name}.txt', 'a') as file:
+        for prompt in prompts:
+            response = inferencer.predict(prompt)
+            file.write(f"{prompt}\n")
+            file.write(f"{response}\n\n")
+
+
 if __name__ == '__main__':
-    prompt = """Words: dare, turkey, independent
-Features: MoralValue
-Summary: Lily learns a lesson about respecting others and listening to those who know more than her after she disobeys a farmer's warning and is pecked by a turkey.
-Story:"""
-    run_inference(prompt)
+    inference_valid_prompts('sft_1_en')
+    # prompt = """Summary: A strong body becomes the strongest in the world by eating healthy food. Words: feed, body, strong Story:"""
+    # run_inference(prompt)
