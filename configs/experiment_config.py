@@ -17,7 +17,7 @@ experiment_cfg.num_steps = 15_000
 # Train parameters
 experiment_cfg.train = EasyDict()
 experiment_cfg.train.batch_size = 16
-experiment_cfg.train.learning_rate = 1e-5
+experiment_cfg.train.learning_rate = 1e-6
 experiment_cfg.train.warmup_steps = 500
 experiment_cfg.train.label_smoothing = 0.0
 experiment_cfg.train.optimizer = 'AdamW'  # from (Adam, AdamW)
@@ -54,12 +54,12 @@ experiment_cfg.best_checkpoint_name = 'best_checkpoint'
 
 # Inference parameters
 experiment_cfg.inference = EasyDict()
-# experiment_cfg.inference.type = InferenceType.greedy
-experiment_cfg.inference.type = InferenceType.temperature
-experiment_cfg.inference.temperature_value = 0.3
+experiment_cfg.inference.type = InferenceType.greedy
+# experiment_cfg.inference.type = InferenceType.temperature
+# experiment_cfg.inference.temperature_value = 0.3
 experiment_cfg.inference.eps = 1e-9
 experiment_cfg.inference.stop_predict = 300  # Maximum number of inference steps (i.e. generated sequence length)
-experiment_cfg.inference.model_path = os.path.join(experiment_cfg.checkpoints_dir, 'last_checkpoint_4_en')
+experiment_cfg.inference.model_path = os.path.join(experiment_cfg.checkpoints_dir, 'sft_1_en')
 
 #
 experiment_cfg.model = model_cfg

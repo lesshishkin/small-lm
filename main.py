@@ -3,11 +3,11 @@ from executors.inferencer import Inferencer
 from configs.experiment_config import experiment_cfg
 
 
-def run_inference():
+def run_inference(prompt=None):
     inferencer = Inferencer(experiment_cfg)
-    print('Prompt:')
-    sentence = input()
-    inferencer.predict(sentence)
+    if prompt is None:
+        prompt = input('Prompt:')
+    inferencer.predict(prompt)
 
 
 def train_previous():
@@ -28,4 +28,8 @@ def sft_finetuning():
 
 
 if __name__ == '__main__':
-    sft_finetuning()
+    prompt = """Words: dare, turkey, independent
+Features: MoralValue
+Summary: Lily learns a lesson about respecting others and listening to those who know more than her after she disobeys a farmer's warning and is pecked by a turkey.
+Story:"""
+    run_inference(prompt)
