@@ -44,10 +44,6 @@ class TinyStoriesInstructDataset(Dataset):
 
         if self.set_type == SetType.train:
             self.dataset = read_file(config.tokenized_train_data_path)
-
-        elif self.set_type == SetType.validation:
-            self.dataset = read_file(config.tokenized_valid_data_path)
-
         else:
             raise Exception('Unknown set type')
 
@@ -57,9 +53,8 @@ class TinyStoriesInstructDataset(Dataset):
     def __getitem__(self, idx: int):
         sample_data = {
             'id': idx,
-            'tokens': self.dataset[idx]
+            'tokens': self.dataset[idx]['task'] + self.dataset[idx]['story'],
+            'task_len': self.dataset[idx]['task_len']
         }
 
         return sample_data
-
-

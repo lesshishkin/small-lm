@@ -9,12 +9,12 @@ from torch import optim
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 
-from dataset.russian_stories_dataset import TinyStoriesDataset
+from dataset.russian_stories_dataset import TinyStoriesDataset, TinyStoriesInstructDataset
 from executors.sampler import RandomSortingSampler
 from models.tinyllm2 import TinyLLM2
 from models.tinyllm import TinyLLM
 from utils.common_functions import set_seed
-from utils.data_utils import collate_function
+from utils.data_utils import collate_function, sft_collate_function
 from utils.enums import SetType
 from utils.logger import NeptuneLogger
 from transformers import get_cosine_schedule_with_warmup
@@ -25,9 +25,10 @@ import youtokentome as yttm
 class Trainer:
     """A class for model training."""
 
-    def __init__(self, config, init_logger=True):
+    def __init__(self, config, init_logger=True, fine_tune=False):
         self.config = config
         set_seed(self.config.seed)
+        self.fine_tune = fine_tune
 
         self._prepare_data()
         self.tokenizer = yttm.BPE(model=self.config.data.tokenizer_path, n_threads=-1)
@@ -50,26 +51,22 @@ class Trainer:
         batch_size = self.config.train.batch_size
 
         self.train_dataset = dataset(data_cfg, SetType.train)
+
+        if self.fine_tune:
+            collate_fn = sft_collate_function
+        else:
+            collate_fn = collate_function
+
         self.train_dataloader = DataLoader(
             self.train_dataset,
             batch_sampler=RandomSortingSampler(self.train_dataset, batch_size=batch_size, shuffle=True),
-            collate_fn=collate_function
+            collate_fn=collate_fn
         )
 
-        # предварительные действия:
-        # 1. узнать какая длина создает проблему с памятью  done 720 при 12 слоях
-        # 2. узнать сколько за раз сможет обработать кагл
-        # 3. сортируем датасет по длине
-        # 4. удалим элементы датасета с длиной больше пороговой
-        # 5. убрать остаток, который не войдет в батч
-        # 6. перемешиваем кусками по 16 (батч) штук
-        # 7. разделяем на части, кратные 16
-        # 8. батч_семплер тот же
-
-        self.validation_dataset = dataset(data_cfg, SetType.validation)
-        self.validation_dataloader = DataLoader(
-            self.validation_dataset, batch_size=self.config.train.validation_batch_size, collate_fn=collate_function
-        )
+        # self.validation_dataset = dataset(data_cfg, SetType.validation)
+        # self.validation_dataloader = DataLoader(
+        #     self.validation_dataset, batch_size=self.config.train.validation_batch_size, collate_fn=collate_function
+        # )
 
     def _prepare_model(self):
         """Preparing model, optimizer and loss function."""
@@ -108,12 +105,13 @@ class Trainer:
             os.path.join(self.config.checkpoints_dir, filepath)
         )
 
-    def load(self, filepath: str):
+    def load(self, filepath: str, only_model=False):
         """Loads trained model."""
         checkpoint = torch.load(filepath, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
-        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        if not only_model:
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
 
     def update_best_params(self, valid_metric, best_metric):
         """Update best parameters: saves model if metrics exceeds the best values achieved."""
@@ -201,14 +199,6 @@ class Trainer:
             )
             train_decoder_outputs.extend(decoder_outputs.tolist())
 
-            # todo добавить валидацию по api на валидационной выборке
-            # # Evaluate performance on the validation data
-            # if step % self.config.train.validation_frequency == 0:
-            #     valid_loss, valid_metric = self.evaluate(self.validation_dataloader)
-            #
-            #     self.logger.save_metrics(SetType.validation.name, 'loss', valid_loss, step=steps_done + step)
-            #     self.logger.save_metrics(SetType.validation.name, 'bleu', valid_metric, step=steps_done + step)
-
             # Evaluate performance on the part of training data
             if step % self.config.train.log_frequency == 0 and step != 0:
                 train_loss, train_metric, output_to_show = self.evaluate_train(
@@ -238,72 +228,10 @@ class Trainer:
             self.load(self.config.checkpoint_name % step)
             start_epoch = step // len(self.train_dataloader) + 1
 
-        # todo пока не реализовали валидацию просто смотрим лосс и сохраняем по расписанию
         for epoch in range(start_epoch, self.config.num_epochs):
             best_metric = self.train_epoch(epoch, best_metric)
 
-            # if epoch % self.config.train.inference_frequency == 0:
-            #     # _, valid_metric = self.evaluate(self.validation_dataloader, inference=True)
-            #     # _, train_eval_metric = self.evaluate(self.train_eval_dataloader, inference=True)
-            #     # best_metric = self.update_best_params(valid_metric, best_metric)
-            #
-            #     step = max(0, epoch * len(self.train_dataloader) - 1)
-            #     self.logger.save_metrics(SetType.validation.name + '_eval', 'bleu_inference', valid_metric, step=step)
-            #     self.logger.save_metrics(SetType.train.name + '_eval', 'bleu_inference', train_eval_metric, step=step)
-
-        # _, valid_metric = self.evaluate(self.validation_dataloader, inference=True)
-        # _, train_eval_metric = self.evaluate(self.train_eval_dataloader, inference=True)
-        # self.update_best_params(valid_metric, best_metric)
-
-        # last_step = self.config.num_epochs * len(self.train_dataloader) - 1
-        # self.logger.save_metrics(SetType.validation.name + '_eval', 'bleu_inference', valid_metric, step=last_step)
-        # self.logger.save_metrics(SetType.train.name + '_eval', 'bleu_inference', train_eval_metric, step=last_step)
         self.save('last_checkpoint')
-
-    @torch.no_grad()
-    def evaluate(self, dataloader: DataLoader, inference: bool = False):
-        """Evaluation.
-
-        The method is used to make the model performance evaluation on training/validation/test data.
-
-        Args:
-            dataloader: dataloader to make evaluation on
-            inference: a boolean indicating whether to get predictions through inference
-        """
-        # todo переделать под проверку при помощи llm
-        self.model.eval()
-        target_lang_preprocessor = self.train_dataset.preprocessors[self.config.data.target_lang]
-        pad_idx = self.config.data.preprocessing.special_tokens.index("[PAD]")
-        total_loss, all_predictions, all_decoder_outputs, all_encoder_inputs = [], [], [], []
-
-        for batch in dataloader:
-            loss, output, decoder_outputs, encoder_inputs = self.make_step(batch, update_model=False)
-
-            total_loss.append(loss)
-            if inference:
-                all_predictions.extend(self.inference(encoder_inputs, self.config.inference))
-            else:
-                prediction_with_pad = output.argmax(axis=-1) + 1
-                all_predictions.extend(
-                    [prediction_with_pad[i][decoder_outputs[i] != pad_idx].tolist() for i in
-                     range(len(decoder_outputs))]
-                )
-            all_decoder_outputs.extend(decoder_outputs.tolist())
-
-        total_loss = np.mean(total_loss)
-        all_targets_decoded = target_lang_preprocessor.decode(all_decoder_outputs, batch=True)
-        all_predictions_decoded = target_lang_preprocessor.decode(all_predictions, batch=True)
-        references = list(map(lambda x: [x], all_targets_decoded))
-        try:
-            results = self.metric.compute(predictions=all_predictions_decoded, references=references)
-        except ZeroDivisionError:
-            results = {'bleu': 0}
-
-        if hasattr(torch.cuda, 'empty_cache'):
-            torch.cuda.empty_cache()
-
-        self.model.train()
-        return total_loss, results['bleu']
 
     def batch_overfit(self):
         """One batch overfitting.

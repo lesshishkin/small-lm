@@ -11,8 +11,8 @@ ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 experiment_cfg = EasyDict()
 experiment_cfg.seed = 0
 experiment_cfg.num_epochs = 1
-experiment_cfg.num_steps = 340_000
-# experiment_cfg.num_steps = 170_000
+experiment_cfg.num_steps = 15_000
+# 13738 батчей в одной части инстракт датасета
 
 # Train parameters
 experiment_cfg.train = EasyDict()
@@ -60,5 +60,7 @@ experiment_cfg.inference.temperature_value = 0.3
 experiment_cfg.inference.eps = 1e-9
 experiment_cfg.inference.stop_predict = 300  # Maximum number of inference steps (i.e. generated sequence length)
 experiment_cfg.inference.model_path = os.path.join(experiment_cfg.checkpoints_dir, 'last_checkpoint_4_en')
+
+#
 experiment_cfg.model = model_cfg
-experiment_cfg.data = data_cfg
+experiment_cfg.data = data_cfg.instruct_dataset

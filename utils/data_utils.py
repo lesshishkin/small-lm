@@ -40,8 +40,27 @@ def collate_function(batch):
     inputs, targets, idx = [], [], []
 
     for data_dict in batch:
-        inputs.append(torch.tensor(data_dict['tokens'][1:-1]))
-        targets.append(torch.tensor(data_dict['tokens'][2:]))
+        inputs.append(torch.tensor(data_dict['tokens'][:-1]))
+        targets.append(torch.tensor(data_dict['tokens'][1:]))
+        idx.append(torch.tensor(data_dict['id'], dtype=torch.int))
+
+    inputs = pad_sequence(inputs, batch_first=True)
+    targets = pad_sequence(targets, batch_first=True)
+    idx = torch.vstack(idx)
+
+    decoder_mask = get_sequence_mask(inputs, mask_future_positions=True)
+
+    return idx, inputs, targets, decoder_mask
+
+
+def sft_collate_function(batch):
+    inputs, targets, idx = [], [], []
+
+    for data_dict in batch:
+        inputs.append(torch.tensor(data_dict['tokens'][:-1]))
+        target = torch.tensor(data_dict['tokens'][1:])
+        target[:data_dict['task_len']-1] = 0
+        targets.append(target)
         idx.append(torch.tensor(data_dict['id'], dtype=torch.int))
 
     inputs = pad_sequence(inputs, batch_first=True)

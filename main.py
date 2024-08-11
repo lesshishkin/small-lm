@@ -21,7 +21,11 @@ def train_new():
     trainer.fit()
 
 
+def sft_finetuning():
+    trainer = Trainer(experiment_cfg, fine_tune=True)
+    trainer.load('experiments/checkpoints/last_checkpoint_en_3', only_model=True)
+    trainer.fit()
+
+
 if __name__ == '__main__':
-    # trainer = Trainer(experiment_cfg)
-    # trainer.batch_overfit()
-    run_inference()
+    sft_finetuning()
