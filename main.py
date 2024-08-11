@@ -39,5 +39,4 @@ def inference_valid_prompts(checkpoint_name):
 
 if __name__ == '__main__':
     inference_valid_prompts('sft_1_en')
-    # prompt = """Summary: A strong body becomes the strongest in the world by eating healthy food. Words: feed, body, strong Story:"""
-    # run_inference(prompt)
+
