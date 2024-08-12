@@ -38,5 +38,5 @@ def inference_valid_prompts(checkpoint_name):
 
 
 if __name__ == '__main__':
-    inference_valid_prompts('sft_2_en')
+    inference_valid_prompts('sft_4_en')
 
