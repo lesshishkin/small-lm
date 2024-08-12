@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
 # Устанавливаем рабочую директорию в контейнере
 WORKDIR /app
 
+# Устанавливаем Cython до установки зависимостей
+RUN pip install --no-cache-dir Cython
+
 # Копируем файл с зависимостями и устанавливаем их
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
