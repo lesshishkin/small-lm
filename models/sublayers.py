@@ -22,7 +22,6 @@ class RMSNorm(torch.nn.Module):
 
 class FeedForward(nn.Module):
     """FF block like LLaMA3. 3 layers"""
-    # TODO replace ...parallel... with torch linear layers
     def __init__(
         self,
         dim: int,
@@ -33,7 +32,6 @@ class FeedForward(nn.Module):
         super().__init__()
         hidden_dim = int(2 * hidden_dim / 3)
         # custom dim factor multiplier
-        # todo разобраться почему три слоя, какие размеры
         if ffn_dim_multiplier is not None:
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
         hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
